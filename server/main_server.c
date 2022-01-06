@@ -2,8 +2,7 @@
 #include "../Shared/SocketExampleShared.h"
 #include "../Shared/SocketSendRecvTools.h"
 #include "../server/main_server.h"
-
-
+#include "game.h"
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 /*
  This file was written for instruction purposes for the
@@ -40,12 +39,13 @@ SOCKET ThreadInputs[NUM_OF_WORKER_THREADS];
 
 static int FindFirstUnusedThreadSlot();
 static void CleanupWorkerThreads();
-static DWORD ServiceThread(SOCKET* t_socket);
+static DWORD ServiceThread(thread_service_arg *thread_argv);
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 int MainServer(int port)
 {
+	thread_service_arg player_array[2];
 	int Ind;
 	int Loop;
 	SOCKET MainSocket = INVALID_SOCKET;
@@ -98,18 +98,7 @@ int MainServer(int port)
 
 	service.sin_family = AF_INET;
 	service.sin_addr.s_addr = Address;
-	service.sin_port = htons(port); //The htons function converts a u_short from host to TCP/IP network byte order 
-									   //( which is big-endian ).
-	/*
-		The three lines following the declaration of sockaddr_in service are used to set up
-		the sockaddr structure:
-		AF_INET is the Internet address family.
-		"127.0.0.1" is the local IP address to which the socket will be bound.
-		2345 is the port number to which the socket will be bound.
-	*/
-
-	// Call the bind function, passing the created socket and the sockaddr_in structure as parameters. 
-	// Check for general errors.
+	service.sin_port = htons(port);
 	bindRes = bind(MainSocket, (SOCKADDR*)&service, sizeof(service));
 	if (bindRes == SOCKET_ERROR)
 	{
@@ -133,38 +122,36 @@ int MainServer(int port)
 
 	for (Loop = 0; Loop < MAX_LOOPS; Loop++)
 	{
-		SOCKET AcceptSocket = accept(MainSocket, NULL, NULL);
-		if (AcceptSocket == INVALID_SOCKET)
+		player_array[Loop].player_socket = accept(MainSocket, NULL, NULL);
+		if (player_array[Loop].player_socket == INVALID_SOCKET)
 		{
 			printf("Accepting connection with client failed, error %ld\n", WSAGetLastError());
 			goto server_cleanup_3;
 		}
 
-		printf("Client Connected.\n");
-
+		printf("Clients Connected game start.\n");
+		game_start();
 		Ind = FindFirstUnusedThreadSlot();
 
 		if (Ind == NUM_OF_WORKER_THREADS) //no slot is available
 		{
 			printf("No slots available for client, dropping the connection.\n");
-			closesocket(AcceptSocket); //Closing the socket, dropping the connection.
+			closesocket(player_array[Loop].player_socket); //Closing the socket, dropping the connection.
 		}
 		else
 		{
-			ThreadInputs[Ind] = AcceptSocket; // shallow copy: don't close 
-											  // AcceptSocket, instead close 
-											  // ThreadInputs[Ind] when the
-											  // time comes.
+
+			ThreadInputs[Ind] = player_array[Loop].player_socket;
 			ThreadHandles[Ind] = CreateThread(
 				NULL,
 				0,
 				(LPTHREAD_START_ROUTINE)ServiceThread,
-				&(ThreadInputs[Ind]),
+				&player_array[Loop],
 				0,
 				NULL
 			);
 		}
-	} // for ( Loop = 0; Loop < MAX_LOOPS; Loop++ )
+	} 
 
 server_cleanup_3:
 
@@ -238,86 +225,76 @@ static void CleanupWorkerThreads()
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 //Service thread is the thread that opens for each successful client connection and "talks" to the client.
-static DWORD ServiceThread(SOCKET* t_socket)
+static DWORD ServiceThread(thread_service_arg* thread_argv)
 {
-	char SendStr[SEND_STR_SIZE];
-
+	char SendStr[SEND_STR_SIZE], *recv =NULL;
+	int game_on;
 	BOOL Done = FALSE;
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
-
-	strcpy(SendStr, "Welcome to this server!");
-
-	SendRes = SendString(SendStr, *t_socket);
-
-	if (SendRes == TRNS_FAILED)
+	char* AcceptedStr = NULL;
+	while (1) {
+	RecvRes = ReceiveString(&recv, thread_argv->player_socket);
+	if (RecvRes == TRNS_FAILED)
 	{
-		printf("Service socket error while writing, closing thread.\n");
-		closesocket(*t_socket);
-		return 1;
+		printf("Socket error while trying to write data to socket\n");
+		return 0x555;
 	}
+	else if (RecvRes == TRNS_DISCONNECTED)
+	{
+		printf("Server closed connection. Bye!\n");
+		return 0x555;
+	}
+	else
+	{
+		printf("thie messafe from client is:%s", recv);
+	}
+	if (strstr(recv, CLIENT_REQUEST)) {
+		strcpy(thread_argv->player_name, recv);//parser
+		recv = NULL;
+		SendRes = SendString(SERVER_APPROVED, thread_argv->player_socket);
+		if (SendRes == TRNS_FAILED)
+		{
+			printf("Service socket error while writing, closing thread.\n");
+			closesocket(thread_argv->player_socket);
+			return 1;
+		}
+		break;
+	}
+	}
+
+	
 
 	while (!Done)
 	{
 		char* AcceptedStr = NULL;
-
-		RecvRes = ReceiveString(&AcceptedStr, *t_socket);
-
+		//WaitForSingleObject(semaphore_clinet_connect, INFINITE);
+		RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
 		if (RecvRes == TRNS_FAILED)
 		{
 			printf("Service socket error while reading, closing thread.\n");
-			closesocket(*t_socket);
+			closesocket(thread_argv->player_socket);
 			return 1;
 		}
 		else if (RecvRes == TRNS_DISCONNECTED)
 		{
 			printf("Connection closed while reading, closing thread.\n");
-			closesocket(*t_socket);
+			closesocket(thread_argv->player_socket);
 			return 1;
 		}
 		else
 		{
-			printf("Got string : %s\n", AcceptedStr);
-		}
-
-		//After reading a single line, checking to see what to do with it
-		//If got "hello" send back "what's up?"
-		//If got "how are you?" send back "great"
-		//If got "bye" send back "see ya!" and then end the thread
-		//Otherwise, send "I don't understand"
-
-		if (STRINGS_ARE_EQUAL(AcceptedStr, "hello"))
-		{
-			strcpy(SendStr, "what's up?");
-		}
-		else if (STRINGS_ARE_EQUAL(AcceptedStr, "how are you?"))
-		{
-			strcpy(SendStr, "great");
-		}
-		else if (STRINGS_ARE_EQUAL(AcceptedStr, "bye"))
-		{
-			strcpy(SendStr, "see ya!");
-			Done = TRUE;
-		}
-		else
-		{
-			strcpy(SendStr, "I don't understand");
-		}
-
-		SendRes = SendString(SendStr, *t_socket);
-
-		if (SendRes == TRNS_FAILED)
-		{
-			printf("Service socket error while writing, closing thread.\n");
-			closesocket(*t_socket);
-			return 1;
+			printf("Got string : %s from %s \n", AcceptedStr , thread_argv->player_name);
 		}
 
 		free(AcceptedStr);
+		//RecvRes = ReceiveString(&AcceptedStr, *t_socket);
+		game_on=game_step();
+		//ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
 	}
 
 	printf("Conversation ended.\n");
-	closesocket(*t_socket);
+	closesocket(thread_argv->player_socket);
 	return 0;
 }
 

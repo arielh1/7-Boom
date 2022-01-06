@@ -1,6 +1,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "../Shared/SocketExampleShared.h"
 #include "../Shared/SocketSendRecvTools.h"
+#include "../shared/helper_function.h"
+
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 /*
  This file was written for instruction purposes for the
@@ -24,14 +26,14 @@ SOCKET m_socket;
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 //Reading data coming from the server
-static DWORD RecvDataThread(void)
+static DWORD RecvDataThread(char *server_message)
 {
 	TransferResult_t RecvRes;
 
 	while (1)
 	{
-		char* AcceptedStr = NULL;
-		RecvRes = ReceiveString(&AcceptedStr, m_socket);
+		
+		RecvRes = ReceiveString(&server_message, m_socket);
 
 		if (RecvRes == TRNS_FAILED)
 		{
@@ -45,10 +47,10 @@ static DWORD RecvDataThread(void)
 		}
 		else
 		{
-			printf("%s\n", AcceptedStr);
+			printf("%s\n", server_message);
 		}
 
-		free(AcceptedStr);
+		return 0; 
 	}
 
 	return 0;
@@ -57,13 +59,15 @@ static DWORD RecvDataThread(void)
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 //Sending data to the server
-static DWORD SendDataThread(void)
+static DWORD SendDataThread(char *argv[])
 {
 	char SendStr[256];
 	TransferResult_t SendRes;
-
+	
+	
 	while (1)
 	{
+
 		gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
 
 		if (STRINGS_ARE_EQUAL(SendStr, "quit"))
@@ -81,11 +85,11 @@ static DWORD SendDataThread(void)
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
-void MainClient(char *ip,int port)
+void MainClient(char *ip,int port,char *argv[])
 {
 	SOCKADDR_IN clientService;
 	HANDLE hThread[2];
-
+	int state = 0;
 	// Initialize Winsock.
 	WSADATA wsaData; //Create a WSADATA object called wsaData.
 	//The WSADATA structure contains information about the Windows Sockets implementation.
@@ -107,50 +111,25 @@ void MainClient(char *ip,int port)
 		WSACleanup();
 		return;
 	}
-	/*
-	 The parameters passed to the socket function can be changed for different implementations.
-	 Error detection is a key part of successful networking code.
-	 If the socket call fails, it returns INVALID_SOCKET.
-	 The if statement in the previous code is used to catch any errors that may have occurred while creating
-	 the socket. WSAGetLastError returns an error number associated with the last error that occurred.
-	 */
 
-
-	 //For a client to communicate on a network, it must connect to a server.
-	 // Connect to a server.
-
-	 //Create a sockaddr_in object clientService and set  values.
 	clientService.sin_family = AF_INET;
 	clientService.sin_addr.s_addr = inet_addr(ip); //Setting the IP address to connect to
 	clientService.sin_port = htons(port); //Setting the port to connect to.
 
-	/*
-		AF_INET is the Internet address family.
-	*/
 
-
-	// Call the connect function, passing the created socket and the sockaddr_in structure as parameters. 
-	// Check for general errors.
 	if (connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR) {
 		printf("Failed to connect.\n");
 		WSACleanup();
 		return;
 	}
 
-	// Send and receive data.
 	/*
-		In this code, two integers are used to keep track of the number of bytes that are sent and received.
-		The send and recv functions both return an integer value of the number of bytes sent or received,
-		respectively, or an error. Each function also takes the same parameters:
-		the active socket, a char buffer, the number of bytes to send or receive, and any flags to use.
-
-	*/
 
 	hThread[0] = CreateThread(
 		NULL,
 		0,
 		(LPTHREAD_START_ROUTINE)SendDataThread,
-		NULL,
+		argv,
 		0,
 		NULL
 	);
@@ -158,11 +137,68 @@ void MainClient(char *ip,int port)
 		NULL,
 		0,
 		(LPTHREAD_START_ROUTINE)RecvDataThread,
-		NULL,
+		0,
 		0,
 		NULL
 	);
-
+	*/
+	char SendStr[256], *recv = NULL;
+	TransferResult_t SendRes;
+	TransferResult_t RecvRes;
+	int i = 1;
+	while (1) {
+		switch (state)
+		{
+		case 0:
+			sprintf(SendStr, "%s:%s", CLIENT_REQUEST, argv[3]);
+			SendRes = SendString(SendStr, m_socket);
+			if (SendRes == TRNS_FAILED)
+			{
+				printf("Socket error while trying to write data to socket\n");
+				return 0x555;
+			}
+			RecvRes = ReceiveString(&recv, m_socket);
+			if (RecvRes == TRNS_FAILED)
+			{
+				printf("Socket error while trying to write data to socket\n");
+				return 0x555;
+			}
+			else if (RecvRes == TRNS_DISCONNECTED)
+			{
+				printf("Server closed connection. Bye!\n");
+				return 0x555;
+			}
+			else
+			{
+				printf("thie messafe from server is:%s", recv);
+			}
+			if (strstr(recv, SERVER_APPROVED)) {
+				state = 1;
+				recv = NULL;
+			}
+			break;
+		case 1:
+			hThread[0] = CreateThread(
+				NULL,
+				0,
+				(LPTHREAD_START_ROUTINE)SendDataThread,
+				argv,
+				0,
+				NULL
+			);
+			hThread[1] = CreateThread(
+				NULL,
+				0,
+				(LPTHREAD_START_ROUTINE)RecvDataThread,
+				0,
+				0,
+				NULL
+			);
+			break;
+		default:
+			break;
+		}
+	}
 	WaitForMultipleObjects(2, hThread, FALSE, INFINITE);
 
 	TerminateThread(hThread[0], 0x555);
@@ -185,7 +221,7 @@ void MainClient(char *ip,int port)
 
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
-	MainClient(argv[1],atoi(argv[2]));
+	MainClient(argv[1],atoi(argv[2]),argv);
 	return exitcode; // Returns 0 if returned sucsessfuly, 0x555 else
 }
 

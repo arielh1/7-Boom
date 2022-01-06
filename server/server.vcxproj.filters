@@ -24,6 +24,12 @@
     <ClCompile Include="..\Shared\SocketSendRecvTools.c">
       <Filter>shared</Filter>
     </ClCompile>
+    <ClCompile Include="game.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Shared\helper_function.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Shared\SocketExampleShared.h">
@@ -33,6 +39,12 @@
       <Filter>shared</Filter>
     </ClInclude>
     <ClInclude Include="main_server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\helper_function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

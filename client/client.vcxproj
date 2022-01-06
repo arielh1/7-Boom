@@ -139,10 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Shared\helper_function.c" />
     <ClCompile Include="..\Shared\SocketSendRecvTools.c" />
     <ClCompile Include="main_client.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Shared\helper_function.h" />
     <ClInclude Include="..\Shared\SocketExampleShared.h" />
     <ClInclude Include="..\Shared\SocketSendRecvTools.h" />
   </ItemGroup>
