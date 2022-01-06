@@ -251,7 +251,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 	}
 	if (strstr(recv, CLIENT_REQUEST)) {
 		strcpy(thread_argv->player_name, recv);//parser
-		recv = NULL;
+		recv = NULL;//freee
 		SendRes = SendString(SERVER_APPROVED, thread_argv->player_socket);
 		if (SendRes == TRNS_FAILED)
 		{

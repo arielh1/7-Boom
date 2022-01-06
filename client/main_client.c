@@ -122,31 +122,13 @@ void MainClient(char *ip,int port,char *argv[])
 		WSACleanup();
 		return;
 	}
+	printf("connect.\n");
 
-	/*
-
-	hThread[0] = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)SendDataThread,
-		argv,
-		0,
-		NULL
-	);
-	hThread[1] = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)RecvDataThread,
-		0,
-		0,
-		NULL
-	);
-	*/
-	char SendStr[256], *recv = NULL;
+	char SendStr[256], *recv = NULL, *input_client=NULL;
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
 	int i = 1;
-	while (1) {
+	while (i) {
 		switch (state)
 		{
 		case 0:
@@ -166,6 +148,7 @@ void MainClient(char *ip,int port,char *argv[])
 			else if (RecvRes == TRNS_DISCONNECTED)
 			{
 				printf("Server closed connection. Bye!\n");
+				i = 0;
 				return 0x555;
 			}
 			else
@@ -174,10 +157,49 @@ void MainClient(char *ip,int port,char *argv[])
 			}
 			if (strstr(recv, SERVER_APPROVED)) {
 				state = 1;
-				recv = NULL;
+				free(recv);
 			}
 			break;
 		case 1:
+			RecvRes = ReceiveString(&recv, m_socket);
+			if (RecvRes == TRNS_FAILED)
+			{
+				printf("Socket error while trying to write data to socket\n");
+				return 0x555;
+			}
+			else if (RecvRes == TRNS_DISCONNECTED)
+			{
+				printf("Server closed connection. Bye!\n");
+				i = 0;
+				return 0x555;
+			}
+			else
+			{
+				printf("thie messafe from server is:%s", recv);
+
+				if (strstr(recv, SERVER_MAIN_MENU)) {
+
+					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+
+					if (STRINGS_ARE_EQUAL(SendStr, "1"))
+					{
+						state = 2;
+						free(recv);
+						break;
+					}
+					if (STRINGS_ARE_EQUAL(SendStr, "2"))
+					{
+
+						free(recv);
+						break;
+					}
+					printf("this messase not good pls type again\n");
+					free(recv);
+					break;
+				}
+			}
+			break;
+		case 2:
 			hThread[0] = CreateThread(
 				NULL,
 				0,
