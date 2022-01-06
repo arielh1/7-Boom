@@ -295,6 +295,10 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 			if (strstr(recv, CLIENT_VERSUS)) {
 				free(recv);
 				number_of_player++;
+				if (number_of_player == 1)
+					thread_argv->player_index = 1;
+				if (number_of_player == 2)
+					thread_argv->player_index = 2;
 				while (number_of_player < 2);
 				state = 2;
 
@@ -310,10 +314,28 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 				closesocket(thread_argv->player_socket);
 				return 1;
 			}
+			if (thread_argv->player_index == 1)
+				state = 3;
+			if (thread_argv->player_index == 2)
+				state = 3;
+			break;
+		case 3:
+
 			while (!Done)
 			{
+				if (thread_argv->player_index == 1)
+					WaitForSingleObject(semaphore_client_1_turn, INFINITE);
+				if (thread_argv->player_index == 2)
+					WaitForSingleObject(semaphore_client_2_turn, INFINITE);
+				SendRes = SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket);
+				if (SendRes == TRNS_FAILED)
+				{
+					printf("Service socket error while writing, closing thread.\n");
+					closesocket(thread_argv->player_socket);
+					return 1;
+				}
 				char* AcceptedStr = NULL;
-				//WaitForSingleObject(semaphore_clinet_connect, INFINITE);
+
 				RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
 				if (RecvRes == TRNS_FAILED)
 				{
@@ -329,15 +351,25 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 				}
 				else
 				{
-					printf("Got string : %s from %s \n", AcceptedStr, thread_argv->player_name);
+					printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
 				}
 
 				free(AcceptedStr);
 				//RecvRes = ReceiveString(&AcceptedStr, *t_socket);
 			//	game_on = game_step();
-				//ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+				if(thread_argv->player_index == 1)
+				ReleaseSemaphore(semaphore_client_2_turn, 1, NULL);
+				if (thread_argv->player_index ==2)
+					ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
+				
+
 			}
 			break;
+		/*case 4:
+			if==
+			WaitForSingleObject(semaphore_clinet_connect, INFINITE);
+			state = 3;
+			break;*/
 		default:
 			break;
 

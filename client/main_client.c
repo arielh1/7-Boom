@@ -235,24 +235,43 @@ void MainClient(char *ip,int port,char *argv[])
 			break;
 		case 3:
 			
-			
-
-
 			while (1)
 			{
-
-				gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-
-				if (STRINGS_ARE_EQUAL(SendStr, "quit"))
-					return 0x555; //"quit" signals an exit from the client side
-
-				SendRes = SendString(SendStr, m_socket);
-
-				if (SendRes == TRNS_FAILED)
+				recv = NULL;
+				RecvRes = ReceiveString(&recv, m_socket);
+				if (RecvRes == TRNS_FAILED)
 				{
 					printf("Socket error while trying to write data to socket\n");
 					return 0x555;
 				}
+				else if (RecvRes == TRNS_DISCONNECTED)
+				{
+					printf("Server closed connection. Bye!\n");
+					i = 0;
+					return 0x555;
+				}
+				else
+				{
+					printf("thie message from server is:%s\n", recv);
+
+					if (strstr(recv, SERVER_MOVE_REQUEST)) {
+
+						gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+						if (STRINGS_ARE_EQUAL(SendStr, "quit"))
+							return 0x555; //"quit" signals an exit from the client side
+
+						SendRes = SendString(SendStr, m_socket);
+
+						if (SendRes == TRNS_FAILED)
+						{
+							printf("Socket error while trying to write data to socket\n");
+							return 0x555;
+						}
+						free(recv);
+						break;
+					}
+				}
+
 			}
 			break;
 		default:
