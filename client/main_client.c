@@ -257,9 +257,8 @@ void MainClient(char *ip,int port,char *argv[])
 					if (strstr(recv, SERVER_MOVE_REQUEST)) {
 
 						gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-						if (STRINGS_ARE_EQUAL(SendStr, "quit"))
-							return 0x555; //"quit" signals an exit from the client side
-
+					
+						//sprintf(SendStr, "%s:%s", CLIENT_PLAYER_MOVE, SendStr);
 						SendRes = SendString(SendStr, m_socket);
 
 						if (SendRes == TRNS_FAILED)
@@ -267,9 +266,16 @@ void MainClient(char *ip,int port,char *argv[])
 							printf("Socket error while trying to write data to socket\n");
 							return 0x555;
 						}
-						free(recv);
+						
 						break;
 					}
+					if (strstr(recv, GAME_ENDED)) {
+
+						state = 1;
+
+						break;
+					}
+					free(recv);
 				}
 
 			}

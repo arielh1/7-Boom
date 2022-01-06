@@ -14,14 +14,16 @@ Last updated by Amnon Drory, Winter 2011.
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
 
 int number_of_player=0 ;
-int game_on;
-
+int game_on = 1;
+int win;
+int samp1;
+int samp2;
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 #define NUM_OF_WORKER_THREADS 2
@@ -119,7 +121,7 @@ int MainServer(int port)
 		ThreadHandles[Ind] = NULL;
 
 	printf("Waiting for a client to connect...\n");
-
+	game_start(); samp1 = 1; samp2 = 0;
 	for (Loop = 0; Loop < MAX_LOOPS; Loop++)
 	{
 		player_array[Loop].player_socket = accept(MainSocket, NULL, NULL);
@@ -130,7 +132,7 @@ int MainServer(int port)
 		}
 
 		printf("Clients Connected game start.\n");
-		game_start();
+		
 		Ind = FindFirstUnusedThreadSlot();
 
 		if (Ind == NUM_OF_WORKER_THREADS) //no slot is available
@@ -228,7 +230,7 @@ static void CleanupWorkerThreads()
 static DWORD ServiceThread(thread_service_arg* thread_argv)
 {
 	char SendStr[SEND_STR_SIZE], *recv =NULL;
-	int  state = 0;
+	int  state = 0, number;
 	BOOL Done = FALSE;
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
@@ -263,7 +265,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					return 1;
 				}
 				state = 1;
-			
+
 				break;
 			}
 			free(recv);
@@ -290,16 +292,24 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 			}
 			else
 			{
-				printf("thie messafe from client is:%s\n", recv);
+				printf("this message from client is:%s\n", recv);
 			}
 			if (strstr(recv, CLIENT_VERSUS)) {
 				free(recv);
+				while (number_of_player == 2);
 				number_of_player++;
+
 				if (number_of_player == 1)
 					thread_argv->player_index = 1;
-				if (number_of_player == 2)
+				if (number_of_player == 2) {
+				
 					thread_argv->player_index = 2;
+				}
+				number = thread_argv->player_index;
 				while (number_of_player < 2);
+				
+				game_on = 1;
+			
 				state = 2;
 
 				break;
@@ -314,62 +324,125 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 				closesocket(thread_argv->player_socket);
 				return 1;
 			}
-			if (thread_argv->player_index == 1)
-				state = 3;
-			if (thread_argv->player_index == 2)
-				state = 3;
+			//		if (thread_argv->player_index == 1)
+			//			state = 3;
+			//		if (thread_argv->player_index == 2)
+			state = 3;
 			break;
 		case 3:
 
-			while (!Done)
+			while (game_on)
 			{
-				if (thread_argv->player_index == 1)
+				if (thread_argv->player_index == 1) {
 					WaitForSingleObject(semaphore_client_1_turn, INFINITE);
-				if (thread_argv->player_index == 2)
+					samp1--;
+				}
+				if (thread_argv->player_index == 2) {
 					WaitForSingleObject(semaphore_client_2_turn, INFINITE);
-				SendRes = SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket);
-				if (SendRes == TRNS_FAILED)
-				{
-					printf("Service socket error while writing, closing thread.\n");
-					closesocket(thread_argv->player_socket);
-					return 1;
+					samp2--;
 				}
-				char* AcceptedStr = NULL;
 
-				RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
-				if (RecvRes == TRNS_FAILED)
-				{
-					printf("Service socket error while reading, closing thread.\n");
-					closesocket(thread_argv->player_socket);
-					return 1;
-				}
-				else if (RecvRes == TRNS_DISCONNECTED)
-				{
-					printf("Connection closed while reading, closing thread.\n");
-					closesocket(thread_argv->player_socket);
-					return 1;
-				}
-				else
-				{
+				if (game_on == 1) {
+					SendRes = SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket);
+					if (SendRes == TRNS_FAILED)
+					{
+						printf("Service socket error while writing, closing thread.\n");
+						closesocket(thread_argv->player_socket);
+						return 1;
+					}
+
+					char* AcceptedStr = NULL;
+
+					RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
+					if (RecvRes == TRNS_FAILED)
+					{
+						printf("Service socket error while reading, closing thread.\n");
+						closesocket(thread_argv->player_socket);
+						return 1;
+					}
+					else if (RecvRes == TRNS_DISCONNECTED)
+					{
+						printf("Connection closed while reading, closing thread.\n");
+						closesocket(thread_argv->player_socket);
+						return 1;
+					}
+
 					printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
+					if (game_step((number)) == 1)
+					{
+						if (strcmp("boom", AcceptedStr) != 0)
+						{
+							state = 4;
+							win = (thread_argv->player_index == 1) ? 2 : 1;
+							Done = 1;
+							game_on = 0;
+							break;
+						}
+					}
+					else {
+						if (atoi(AcceptedStr) != number) {
+							state = 4;
+							game_on = 0;
+							win = (thread_argv->player_index == 1) ? 2 : 1;
+							Done = 1;
+							break;
+						}
+					}
+					free(AcceptedStr);
+			
+					if (thread_argv->player_index == 1) {
+						ReleaseSemaphore(semaphore_client_2_turn, 1, NULL); samp2++;
+					}
+
+					if (thread_argv->player_index == 2) {
+						ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
+						samp1++;
+					}
+					number += 2;
+
 				}
+				else {
+					sprintf(SendStr, "%s you won\n", GAME_ENDED);
+					SendRes = SendString(SendStr, thread_argv->player_socket);
+					if (SendRes == TRNS_FAILED)
+					{
+						printf("Service socket error while writing, closing thread.\n");
+						closesocket(thread_argv->player_socket);
 
-				free(AcceptedStr);
-				//RecvRes = ReceiveString(&AcceptedStr, *t_socket);
-			//	game_on = game_step();
-				if(thread_argv->player_index == 1)
-				ReleaseSemaphore(semaphore_client_2_turn, 1, NULL);
-				if (thread_argv->player_index ==2)
+						return 1;
+					}
+					printf("game end \n");
 					ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
-				
-
+					number_of_player--;
+					state = 1;
+				}
 			}
 			break;
-		/*case 4:
-			if==
-			WaitForSingleObject(semaphore_clinet_connect, INFINITE);
-			state = 3;
-			break;*/
+		case 4:
+			number_of_player--;
+			if ((thread_argv->player_index == 1)) {
+				ReleaseSemaphore(semaphore_client_2_turn, 1, NULL);
+				samp2++;
+			}
+			if (thread_argv->player_index == 2 )
+			{
+				ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
+				samp1++;
+			}
+			(thread_argv->player_index == win) ? sprintf(SendStr, "%s you won\n", GAME_ENDED) : sprintf(SendStr, "%s you lost\n", GAME_ENDED);
+	
+			SendRes = SendString(SendStr, thread_argv->player_socket);
+			if (SendRes == TRNS_FAILED)
+			{
+				printf("Service socket error while writing, closing thread.\n");
+				closesocket(thread_argv->player_socket);
+				return 1;
+			}
+		 printf("game end \n");
+		 game_on = 0;
+		
+		 state = 1;
+			break;
 		default:
 			break;
 
@@ -378,18 +451,12 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 
 	}
 
-	
+
 
 	printf("Conversation ended.\n");
 	closesocket(thread_argv->player_socket);
 	return 0;
 }
-
-
-
-
-
-
 
 
 
