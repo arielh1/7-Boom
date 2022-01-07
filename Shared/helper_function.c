@@ -3,11 +3,7 @@
 #include "../Shared/SocketExampleShared.h"
 #include "../Shared/SocketSendRecvTools.h"
 #include <stdlib.h>
-/// <summary>
-/// this function calls WaitForSingleObject and checks if error occured
-/// </summary>
-/// <param name="mutex_handle">mutex var</param>
-/// <returns>0 if function succeed, (-1) else</returns>
+
 int wait_for_mutex(HANDLE mutex_handle) {
 	//Wait for the mutex to become available, then take ownership
 	DWORD wait_code;
@@ -20,11 +16,6 @@ int wait_for_mutex(HANDLE mutex_handle) {
 	return SUCCESS_CODE;
 }
 
-/// <summary>
-/// this function calls ReleaseMutex and checks if error occured
-/// </summary>
-/// <param name="mutex_handle">mutex var</param>
-/// <returns>0 if function succeed, (-1) else</returns>
 int release_mutex(HANDLE mutex_handle) {
 	BOOL ret_val;
 	ret_val = ReleaseMutex(mutex_handle);

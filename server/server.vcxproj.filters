@@ -28,7 +28,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Shared\helper_function.c">
-      <Filter>Source Files</Filter>
+      <Filter>shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -45,7 +45,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Shared\helper_function.h">
-      <Filter>Header Files</Filter>
+      <Filter>shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
