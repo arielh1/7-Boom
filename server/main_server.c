@@ -106,68 +106,68 @@ void MainServer(int port)
 	// Initialize all thread handles to NULL, to mark that they have not been initialized
 	for (Ind = 0; Ind < NUM_OF_WORKER_THREADS; Ind++)
 		ThreadHandles[Ind] = NULL;
-
+	Ind = 0;
 	printf("Waiting for a client to connect...\n");
 	semaphore_clinet_connect = CreateSemaphore(0, 2, 2, NULL);
 	while (server_run) {
 		
+	WaitForSingleObject(semaphore_clinet_connect, INFINITE);
+
+			player_array[Ind].player_socket = accept(MainSocket, NULL, NULL);
+			
 	
-			player_array[index_player].player_socket = accept(MainSocket, NULL, NULL);
-			WaitForSingleObject(semaphore_clinet_connect, INFINITE);
-	
-			if (player_array[index_player].player_socket == INVALID_SOCKET)
+			if (player_array[Ind].player_socket == INVALID_SOCKET)
 			{
 				printf("Accepting connection with client failed, error %ld\n", WSAGetLastError());
 				goto server_cleanup_3;
 			}
 			
 			
-			Ind = FindFirstUnusedThreadSlot();
+			
 
-			if (Ind == NUM_OF_WORKER_THREADS) //no slot is available
-			{
-				printf("No slots available for client, dropping the connection.\n");
-				closesocket(player_array[index_player].player_socket); //Closing the socket, dropping the connection.
-				
-			}
-			else
-			{
+			//if (Ind == NUM_OF_WORKER_THREADS) //no slot is available
+			//{
+			//	printf("No slots available for client, dropping the connection.\n");
+			//	closesocket(player_array[Ind].player_socket); //Closing the socket, dropping the connection.
+			//	
+			//}
+			//else
+			//{
 
-				ThreadInputs[index_player] = player_array[index_player].player_socket;
-				ThreadHandles[index_player] = CreateThread(
+				ThreadInputs[Ind] = player_array[Ind].player_socket;
+				ThreadHandles[Ind] = CreateThread(
 					NULL,
 					0,
 					(LPTHREAD_START_ROUTINE)ServiceThread,
-					&player_array[Loop],
+					&player_array[Ind],
 					0,
 					NULL
 				);
-			}
-			index_player= (index_player==1)?0:1;
-			Loop++;
-			if (Loop < 2)
+		/*	}*/
+			Ind = FindFirstUnusedThreadSlot();
+			if (ThreadHandles[0]==NULL|| ThreadHandles[1]==NULL)
 				continue;
-			printf("Clients Connected.\n");
+			printf(" 2 Clients Connected.\n");
 			game_start();
-			DWORD Res = WaitForMultipleObjects(NUM_OF_WORKER_THREADS,ThreadHandles, FALSE, INFINITE);
+			//DWORD Res = WaitForMultipleObjects(NUM_OF_WORKER_THREADS,ThreadHandles, TRUE, INFINITE);
 
-			if (Res != WAIT_FAILED)
-			{
-				closesocket(ThreadInputs[Res]);
-				CloseHandle(ThreadHandles[Res]);
-				ThreadHandles[Res] = NULL;
-				index_player = (Res == 0) ? 0 : 1;
-				Loop--;
-			}
-			else
+			//if (Res != WAIT_FAILED)
+			//{
+			//	closesocket(ThreadInputs[Res]);
+			//	CloseHandle(ThreadHandles[Res]);
+			//	ThreadHandles[Res] = NULL;
+			//	index_player = (Res == 0) ? 0 : 1;
+			//
+			//}
+			//else
 
-			{
-				Ind = FindFirstUnusedThreadSlot();
-				if (!GetProcessId(NULL))
-					ErrorExit(TEXT("GetProcessId"));
-				printf("Waiting for thread failed. Ending program\n");
-				return;
-			}
+			//{
+			////	Ind = FindFirstUnusedThreadSlot();
+			//	if (!GetProcessId(NULL))
+			//		ErrorExit(TEXT("GetProcessId"));
+			//	printf("Waiting for thread failed. Ending program\n");
+			//	return;
+			//}
 			
 	}
 
