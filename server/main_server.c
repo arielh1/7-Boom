@@ -207,6 +207,49 @@ static void CleanupWorkerThreads()
 	}
 }
 
+
+
+
+
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
+int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread_argv){
+	RecvRes = ReceiveString(&recv, thread_argv->player_socket);
+	if (RecvRes == TRNS_FAILED)
+	{
+		printf("Socket error while trying to write data to socket\n");
+
+		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+		return 0x555;
+	}
+	else if (RecvRes == TRNS_DISCONNECTED)
+	{
+		printf("Server closed connection. Bye!\n");
+
+		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+		return 0x555;
+	}
+	else
+		return 0;
+
+}
+
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
+int send_failed(TransferResult_t SendRes, thread_service_arg* thread_argv) {
+	if (SendRes == TRNS_FAILED)
+	{
+		printf("Service socket error while writing, closing thread.\n");
+		closesocket(thread_argv->player_socket);
+
+		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+		return 1;
+	}
+	return 0;
+
+}
+
+
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 //Service thread is the thread that opens for each successful client connection and "talks" to the client.
@@ -223,36 +266,16 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 		{
 		case 0:
 			RecvRes = ReceiveString(&recv, thread_argv->player_socket);
-			if (RecvRes == TRNS_FAILED)
-			{
-				printf("Socket error while trying to write data to socket\n");
 
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-				return 0x555;
-			}
-			else if (RecvRes == TRNS_DISCONNECTED)
+			if(rec_failed_disconnected(RecvRes, thread_argv)==0)
 			{
-				printf("Server closed connection. Bye!\n");
-
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-				return 0x555;
-			}
-			else
-			{
-				printf("thie messafe from client is:%s\n", recv);
+				printf("thie message from client is:%s\n", recv);
 			}
 			if (strstr(recv, CLIENT_REQUEST)) {
 				strcpy(thread_argv->player_name, recv);
 				free(recv);
 				SendRes = SendString(SERVER_APPROVED, thread_argv->player_socket);
-				if (SendRes == TRNS_FAILED)
-				{
-					printf("Service socket error while writing, closing thread.\n");
-					closesocket(thread_argv->player_socket);
-
-					ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-					return 1;
-				}
+				send_failed(SendRes, thread_argv);
 				state = 1;
 
 				break;
@@ -261,31 +284,13 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 			break;
 		case 1:
 			SendRes = SendString(SERVER_MAIN_MENU, thread_argv->player_socket);
-			if (SendRes == TRNS_FAILED)
-			{
-				printf("Service socket error while writing, closing thread.\n");
-				closesocket(thread_argv->player_socket);
+			send_failed(SendRes, thread_argv);
 
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-				return 1;
-			}
 			recv = NULL;
 			RecvRes = ReceiveString(&recv, thread_argv->player_socket);
-			if (RecvRes == TRNS_FAILED)
-			{
-				printf("Socket error while trying to write data to socket\n");
 
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-				return 0x555;
-			}
-			else if (RecvRes == TRNS_DISCONNECTED)
-			{
-				printf("Server closed connection. Bye!\n");
+			rec_failed_disconnected(RecvRes, thread_argv);
 
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-				return 0x555;
-			}
-			
 			if (strstr(recv, CLIENT_VERSUS)) {
 				free(recv);
 				while (number_of_player == 2);
@@ -317,15 +322,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 		case 2:
 			printf("game start\n");
 			SendRes = SendString(GAME_STARTED, thread_argv->player_socket);
-			if (SendRes == TRNS_FAILED)
-			{
-				printf("Service socket error while writing, closing thread.\n");
-
-				closesocket(thread_argv->player_socket);
-
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-				return 1;
-			}
+			send_failed(SendRes, thread_argv);
 			state = 3;
 			break;
 		case 3:
@@ -441,14 +438,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 			(thread_argv->player_index == win) ? sprintf(SendStr, "%s you won\n", GAME_ENDED) : sprintf(SendStr, "%s you lost\n", GAME_ENDED);
 	
 			SendRes = SendString(SendStr, thread_argv->player_socket);
-			if (SendRes == TRNS_FAILED)
-			{
-				printf("Service socket error while writing, closing thread.\n");
-				closesocket(thread_argv->player_socket);
-
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-				return 1;
-			}
+			send_failed(SendRes, thread_argv);
 		 printf("game end \n");
 		 game_on = 0;
 		

@@ -89,13 +89,13 @@ static DWORD SendDataThread(char *argv[])
 
 
 
-/*
-void play_or_quit(SendStr, SendRes, client_name, state) {
+
+int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[], int state) {
 	do {
 		gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
 		if (STRINGS_ARE_EQUAL(SendStr, "1"))
 		{
-			sprintf(SendStr, "%s:%s", CLIENT_VERSUS, client_name));
+			sprintf(SendStr, "%s:%s", CLIENT_VERSUS,argv[3]);
 			SendRes = SendString(SendStr, m_socket);
 			if (SendRes == TRNS_FAILED)
 			{
@@ -104,27 +104,38 @@ void play_or_quit(SendStr, SendRes, client_name, state) {
 				return 0x555;
 			}
 			state = 2;
-			free(recv);
-			break;
+			
+			return 1;
 		}
 		else if (STRINGS_ARE_EQUAL(SendStr, "2"))
 		{
 			state = 4;
 			free(recv);
-			break;
+			return 1;
 		}
 		printf("this messase is not good please type again\n");
 	} while (1);
 }
 
-*/
 
 
 
 
+int check_failed_disconnected(TransferResult_t RecvRes) {
+	if (RecvRes == TRNS_FAILED)
+	{
+		printf("Socket error while trying to write data to socket\n");
+		return ERROR_CODE;
+	}
+	else if (RecvRes == TRNS_DISCONNECTED)
+	{
+		printf("Server closed connection. Bye!\n");
+		return ERROR_CODE;
+	}
+	else
+		return 0;
 
-
-
+}
 
 
 
@@ -202,19 +213,10 @@ int MainClient(char *ip,int port,char *argv[])
 				printf("Socket error while trying to write data to socket\n");
 				return ERROR_CODE;
 			}
+
 			RecvRes = ReceiveString(&recv, m_socket);
-			if (RecvRes == TRNS_FAILED)
-			{
-				printf("Socket error while trying to write data to socket\n");
-				return ERROR_CODE;
-			}
-			else if (RecvRes == TRNS_DISCONNECTED)
-			{
-				printf("Server closed connection. Bye!\n");
-		
-				return ERROR_CODE;
-			}
-			else
+
+			if (check_failed_disconnected(RecvRes) == 0)
 			{
 				printf("thie message from server is:%s", recv);
 			}
@@ -227,50 +229,14 @@ int MainClient(char *ip,int port,char *argv[])
 			recv = NULL;
 
 			RecvRes = ReceiveString(&recv, m_socket);
-			if (RecvRes == TRNS_FAILED)
-			{
-				printf("Socket error while trying to write data to socket\n");
-				return 0x555;
-			}
-			else if (RecvRes == TRNS_DISCONNECTED)
-			{
-				printf("Server closed connection. Bye!\n");
-			
-				return ERROR_CODE;
-			}
-			else
-			{
-				
+
+			if (check_failed_disconnected(RecvRes) == 0)
+			{				
 				printf("this messae from server is:%s", recv);
 				if (strstr(recv, SERVER_MAIN_MENU)) {
 					printf("%s",CLIENT_CHOOSE_P_Q);
-
-
-
-					do {
-						gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-						if (STRINGS_ARE_EQUAL(SendStr, "1"))
-						{
-							sprintf(SendStr, "%s:%s", CLIENT_VERSUS, argv[3]);
-							SendRes = SendString(SendStr, m_socket);
-							if (SendRes == TRNS_FAILED)
-							{
-								printf("Socket error while trying to write data to socket\n");
-								free(recv);
-								return 0x555;
-							}
-							state = 2;
-							free(recv);
-							break;
-						}
-						else if (STRINGS_ARE_EQUAL(SendStr, "2"))
-						{
-							state = 4;
-							free(recv);
-							break;
-						}	
-						printf("this messase is not good please type again\n");		
-					} while (1);
+					play_or_quit(SendStr, SendRes, argv, state);
+					free(recv);
 					break;
 				}
 			}
@@ -278,17 +244,8 @@ int MainClient(char *ip,int port,char *argv[])
 		case 2:
 			recv = NULL;
 			RecvRes = ReceiveString(&recv, m_socket);
-			if (RecvRes == TRNS_FAILED)
-			{
-				printf("Socket error while trying to write data to socket\n");
-				return ERROR_CODE;
-			}
-			else if (RecvRes == TRNS_DISCONNECTED)
-			{
-				printf("Server closed connection. Bye!\n");
-				return ERROR_CODE;
-			}
-			else
+
+			if(check_failed_disconnected(RecvRes)==0)
 			{
 				printf("this message from server is:%s\n", recv);
 
@@ -305,18 +262,8 @@ int MainClient(char *ip,int port,char *argv[])
 			while (1)
 			{
 				recv = NULL;
-				RecvRes = ReceiveString(&recv, m_socket);
-				if (RecvRes == TRNS_FAILED)
-				{
-					printf("Socket error while trying to write data to socket\n");
-					return ERROR_CODE;
-				}
-				else if (RecvRes == TRNS_DISCONNECTED)
-				{
-					printf("Server closed connection. Bye!\n");
-					return ERROR_CODE;
-				}
-				else
+
+				if (check_failed_disconnected(RecvRes) == 0)
 				{
 					printf("this message from server is:%s\n", recv);
 
