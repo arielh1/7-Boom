@@ -2,7 +2,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "../Shared/SocketExampleShared.h"
 #include "../Shared/SocketSendRecvTools.h"
-
+#include <stdlib.h>
 /// <summary>
 /// this function calls WaitForSingleObject and checks if error occured
 /// </summary>
@@ -71,7 +71,10 @@ int write_to_log_file(char* start, char* log_file,char *input ) {
 	int start_len = strlen(start);
 	int str_len = strlen(input);
 	int message_len = start_len + str_len;
-	char* message_str = (char*)calloc(message_len + 1, sizeof(char));
+	char* message_str = NULL;
+		message_str = (char*)calloc(message_len + 1, sizeof(char));
+	if(message_str==NULL)
+		return ERROR_CODE;
 	strcpy(message_str, start);
 	strcat(message_str, input);
 	if (write_to_file(log_file, message_str, 0, message_len) != SUCCESS_CODE) {
@@ -83,22 +86,13 @@ int write_to_log_file(char* start, char* log_file,char *input ) {
 	return SUCCESS_CODE;
 }
 
-int decode_message(Message* message, char* input) {
-	char *token, *next_token;
-	char seps1[] = ":,\n";
-	char seps2[] = ";,\n";
-	/*
-	message = malloc(sizeof(Message));
-	if (NULL == message) {
-		printf("memory allocation failed");
-		return ERROR_CODE;
-	}*/
-	message->message_type = malloc((MAX_SIZE_OF_MESSAGE_TYPE) * sizeof(char));
-	if (!message->message_type) {
-		printf(MEMORY_ALLOCATION_FALIURE_MEESAGE);
-		return ERROR_CODE;
-	}
-	token = strtok_s(input, seps1, &next_token);
+int decode_message( char* input)
+{
+//	char *token, *next_token;
+	//char seps1[] = ":,\n";
+	//char seps2[] = ";,\n";
+
+	/*token = strtok_s(input, seps1, &next_token);
 	strcpy(message->message_type, token);
 	token = strtok_s(NULL, seps2, &next_token);
 	for (int i = 0; i < MAX_PARAM_NUM; i++) {
@@ -111,6 +105,6 @@ int decode_message(Message* message, char* input) {
 		}
 		strcpy(message->param[i], token);
 		token = strtok_s(NULL, seps2, &next_token);
-	}
+	}*/
 	return SUCCESS_CODE;
 }

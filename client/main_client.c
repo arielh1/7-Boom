@@ -13,7 +13,7 @@ Last updated by Amnon Drory, Winter 2011.
  /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
@@ -85,10 +85,10 @@ static DWORD SendDataThread(char *argv[])
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
-void MainClient(char *ip,int port,char *argv[])
+int MainClient(char *ip,int port,char *argv[])
 {
 	SOCKADDR_IN clientService;
-	HANDLE hThread[2];
+//	HANDLE hThread[2];
 	int state = 0;
 	// Initialize Winsock.
 	WSADATA wsaData; //Create a WSADATA object called wsaData.
@@ -109,7 +109,7 @@ void MainClient(char *ip,int port,char *argv[])
 	if (m_socket == INVALID_SOCKET) {
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		WSACleanup();
-		return;
+		return -1;
 	}
 
 	clientService.sin_family = AF_INET;
@@ -120,7 +120,7 @@ void MainClient(char *ip,int port,char *argv[])
 	if (connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR) {
 		printf("Failed to connect.\n");
 		WSACleanup();
-		return;
+		return -1;
 	}
 	printf("connect.\n");
 
@@ -284,19 +284,19 @@ void MainClient(char *ip,int port,char *argv[])
 			break;
 		}
 	}
-	WaitForMultipleObjects(2, hThread, FALSE, INFINITE);
+	//WaitForMultipleObjects(2, hThread, FALSE, INFINITE);
 
-	TerminateThread(hThread[0], 0x555);
-	TerminateThread(hThread[1], 0x555);
+	//TerminateThread(hThread[0], 0x555);
+	//TerminateThread(hThread[1], 0x555);
 
-	CloseHandle(hThread[0]);
-	CloseHandle(hThread[1]);
+	//CloseHandle(hThread[0]);
+	//CloseHandle(hThread[1]);
 
 	closesocket(m_socket);
 
 	WSACleanup();
 
-	return;
+	return -1;
 }
 
 

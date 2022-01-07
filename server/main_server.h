@@ -3,7 +3,7 @@
 #define MAIN_SERVER_H
 
 
-int MainServer(int port);
+void MainServer(int port);
 typedef struct thread_service_arg {
 	char player_name[MAX_LEN_NAME];
 	int player_index;

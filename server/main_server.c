@@ -45,7 +45,7 @@ static DWORD ServiceThread(thread_service_arg *thread_argv);
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
-int MainServer(int port)
+void MainServer(int port)
 {
 	thread_service_arg player_array[2];
 	int Ind;
