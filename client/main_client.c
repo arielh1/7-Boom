@@ -85,9 +85,60 @@ static DWORD SendDataThread(char *argv[])
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
+
+
+
+
+/*
+void play_or_quit(SendStr, SendRes, client_name, state) {
+	do {
+		gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+		if (STRINGS_ARE_EQUAL(SendStr, "1"))
+		{
+			sprintf(SendStr, "%s:%s", CLIENT_VERSUS, client_name));
+			SendRes = SendString(SendStr, m_socket);
+			if (SendRes == TRNS_FAILED)
+			{
+				printf("Socket error while trying to write data to socket\n");
+				free(recv);
+				return 0x555;
+			}
+			state = 2;
+			free(recv);
+			break;
+		}
+		else if (STRINGS_ARE_EQUAL(SendStr, "2"))
+		{
+			state = 4;
+			free(recv);
+			break;
+		}
+		printf("this messase is not good please type again\n");
+	} while (1);
+}
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
 int MainClient(char *ip,int port,char *argv[])
 {
 	char SendStr[2560], * recv = NULL, * input_client = NULL;
+//	int input_is_valid=0;
 	SOCKADDR_IN clientService;
 //	HANDLE hThread[2];
 	int state = 0;
@@ -174,6 +225,7 @@ int MainClient(char *ip,int port,char *argv[])
 			break;
 		case 1:
 			recv = NULL;
+
 			RecvRes = ReceiveString(&recv, m_socket);
 			if (RecvRes == TRNS_FAILED)
 			{
@@ -188,32 +240,37 @@ int MainClient(char *ip,int port,char *argv[])
 			}
 			else
 			{
+				
 				printf("this messae from server is:%s", recv);
-
 				if (strstr(recv, SERVER_MAIN_MENU)) {
 					printf("%s",CLIENT_CHOOSE_P_Q);
-					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-					if (STRINGS_ARE_EQUAL(SendStr, "1"))
-					{
-						sprintf(SendStr, "%s:%s", CLIENT_VERSUS, argv[3]);
-						SendRes = SendString(SendStr, m_socket);
-						if (SendRes == TRNS_FAILED)
+
+
+
+					do {
+						gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+						if (STRINGS_ARE_EQUAL(SendStr, "1"))
 						{
-							printf("Socket error while trying to write data to socket\n");
-							return 0x555;
+							sprintf(SendStr, "%s:%s", CLIENT_VERSUS, argv[3]);
+							SendRes = SendString(SendStr, m_socket);
+							if (SendRes == TRNS_FAILED)
+							{
+								printf("Socket error while trying to write data to socket\n");
+								free(recv);
+								return 0x555;
+							}
+							state = 2;
+							free(recv);
+							break;
 						}
-						state = 2;
-						free(recv);
-						break;
-					}
-					if (STRINGS_ARE_EQUAL(SendStr, "2"))
-					{
-						state = 4;
-						free(recv);
-						break;
-					}
-					printf("this messase not good pls type again\n");
-					free(recv);
+						else if (STRINGS_ARE_EQUAL(SendStr, "2"))
+						{
+							state = 4;
+							free(recv);
+							break;
+						}	
+						printf("this messase is not good please type again\n");		
+					} while (1);
 					break;
 				}
 			}
@@ -261,7 +318,7 @@ int MainClient(char *ip,int port,char *argv[])
 				}
 				else
 				{
-					printf("thie message from server is:%s\n", recv);
+					printf("this message from server is:%s\n", recv);
 
 					if (strstr(recv, SERVER_MOVE_REQUEST)) {
 
