@@ -19,6 +19,7 @@ int game_start() {//TODO ERROR
 
 int seven_appeared(char* snum) {
 
+
 	return (strstr(snum, "7") != NULL);
 
 }

@@ -353,7 +353,8 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					}
 
 					char* AcceptedStr = NULL;
-
+					char snum[50];
+			//		char* AcceptedStr_demo = NULL;
 					RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
 					if (RecvRes == TRNS_FAILED)
 					{
@@ -371,9 +372,10 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 						closesocket(thread_argv->player_socket);
 						return 1;
 					}
-
+					sprintf(snum, "%d", number);
 					printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
-					if ((is_seven_boom(number) == 1)|| (seven_appeared(AcceptedStr)==1))
+		//			strcpy(AcceptedStr_demo, AcceptedStr);
+					if ((is_seven_boom(number) == 1) || (seven_appeared(snum)==1))
 					{
 						if (strcmp("boom", AcceptedStr) != 0)
 						{
