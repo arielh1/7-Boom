@@ -158,7 +158,7 @@ int MainClient(char *ip,int port,char *argv[])
 			}
 
 			if (strstr(recv, SERVER_DENIED)) {
-				state = 0;
+				state = 5;
 				free(recv);
 				break;
 			}
