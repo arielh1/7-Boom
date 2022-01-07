@@ -64,9 +64,8 @@ void MainServer(int port)
 		return;
 	}
 
-	/* The WinSock DLL is acceptable. Proceed. */
 
-	// Create a socket.    
+ 
 	MainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	if (MainSocket == INVALID_SOCKET)
@@ -111,10 +110,9 @@ void MainServer(int port)
 	semaphore_clinet_connect = CreateSemaphore(0, 2, 2, NULL);
 	while (server_run) {
 		
-	WaitForSingleObject(semaphore_clinet_connect, INFINITE);
-
+			WaitForSingleObject(semaphore_clinet_connect, INFINITE);
 			player_array[Ind].player_socket = accept(MainSocket, NULL, NULL);
-			
+		
 	
 			if (player_array[Ind].player_socket == INVALID_SOCKET)
 			{
@@ -122,18 +120,6 @@ void MainServer(int port)
 				goto server_cleanup_3;
 			}
 			
-			
-			
-
-			//if (Ind == NUM_OF_WORKER_THREADS) //no slot is available
-			//{
-			//	printf("No slots available for client, dropping the connection.\n");
-			//	closesocket(player_array[Ind].player_socket); //Closing the socket, dropping the connection.
-			//	
-			//}
-			//else
-			//{
-
 				ThreadInputs[Ind] = player_array[Ind].player_socket;
 				ThreadHandles[Ind] = CreateThread(
 					NULL,
@@ -143,31 +129,12 @@ void MainServer(int port)
 					0,
 					NULL
 				);
-		/*	}*/
+	
 			Ind = FindFirstUnusedThreadSlot();
 			if (ThreadHandles[0]==NULL|| ThreadHandles[1]==NULL)
 				continue;
 			printf(" 2 Clients Connected.\n");
 			game_start();
-			//DWORD Res = WaitForMultipleObjects(NUM_OF_WORKER_THREADS,ThreadHandles, TRUE, INFINITE);
-
-			//if (Res != WAIT_FAILED)
-			//{
-			//	closesocket(ThreadInputs[Res]);
-			//	CloseHandle(ThreadHandles[Res]);
-			//	ThreadHandles[Res] = NULL;
-			//	index_player = (Res == 0) ? 0 : 1;
-			//
-			//}
-			//else
-
-			//{
-			////	Ind = FindFirstUnusedThreadSlot();
-			//	if (!GetProcessId(NULL))
-			//		ErrorExit(TEXT("GetProcessId"));
-			//	printf("Waiting for thread failed. Ending program\n");
-			//	return;
-			//}
 			
 	}
 
