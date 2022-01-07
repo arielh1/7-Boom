@@ -16,14 +16,15 @@
 #include <winsock2.h>
 #include <stdio.h>
 #include <windows.h>
-
+#include <stdlib.h>
+#include <strsafe.h>
 #include <winsock2.h>
 #pragma comment(lib, "ws2_32.lib")
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 typedef enum { TRNS_FAILED, TRNS_DISCONNECTED, TRNS_SUCCEEDED } TransferResult_t;
-
+void ErrorExit(LPTSTR lpszFunction);
 /**
  * SendBuffer() uses a socket to send a buffer.
  *

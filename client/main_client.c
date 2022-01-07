@@ -87,6 +87,7 @@ static DWORD SendDataThread(char *argv[])
 
 int MainClient(char *ip,int port,char *argv[])
 {
+	char SendStr[2560], * recv = NULL, * input_client = NULL;
 	SOCKADDR_IN clientService;
 //	HANDLE hThread[2];
 	int state = 0;
@@ -109,22 +110,33 @@ int MainClient(char *ip,int port,char *argv[])
 	if (m_socket == INVALID_SOCKET) {
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		WSACleanup();
-		return -1;
+		return ERROR_CODE;
 	}
 
 	clientService.sin_family = AF_INET;
 	clientService.sin_addr.s_addr = inet_addr(ip); //Setting the IP address to connect to
 	clientService.sin_port = htons(port); //Setting the port to connect to.
 
-
-	if (connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR) {
-		printf("Failed to connect.\n");
-		WSACleanup();
-		return -1;
+	while ((connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR)) {
+		 {
+			printf(CLIENT_CHOOSE_T_E, ip, argv[2]);
+			gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+			if (STRINGS_ARE_EQUAL(SendStr, "1"))
+			{
+				continue;
+			}
+			if (STRINGS_ARE_EQUAL(SendStr, "2"))
+			{
+				return 0;
+			}
+			printf("this messase not good pls type again\n");
+			WSACleanup();
+		}
+		
 	}
 	printf("connect.\n");
 
-	char SendStr[2560], *recv = NULL, *input_client=NULL;
+	
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
 	int i = 1;
@@ -137,23 +149,23 @@ int MainClient(char *ip,int port,char *argv[])
 			if (SendRes == TRNS_FAILED)
 			{
 				printf("Socket error while trying to write data to socket\n");
-				return 0x555;
+				return ERROR_CODE;
 			}
 			RecvRes = ReceiveString(&recv, m_socket);
 			if (RecvRes == TRNS_FAILED)
 			{
 				printf("Socket error while trying to write data to socket\n");
-				return 0x555;
+				return ERROR_CODE;
 			}
 			else if (RecvRes == TRNS_DISCONNECTED)
 			{
 				printf("Server closed connection. Bye!\n");
-				i = 0;
-				return 0x555;
+		
+				return ERROR_CODE;
 			}
 			else
 			{
-				printf("thie messafe from server is:%s", recv);
+				printf("thie message from server is:%s", recv);
 			}
 			if (strstr(recv, SERVER_APPROVED)) {
 				state = 1;
@@ -171,17 +183,16 @@ int MainClient(char *ip,int port,char *argv[])
 			else if (RecvRes == TRNS_DISCONNECTED)
 			{
 				printf("Server closed connection. Bye!\n");
-				i = 0;
-				return 0x555;
+			
+				return ERROR_CODE;
 			}
 			else
 			{
 				printf("thie messafe from server is:%s", recv);
 
 				if (strstr(recv, SERVER_MAIN_MENU)) {
-
+					printf("%s",CLIENT_CHOOSE_P_Q);
 					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-
 					if (STRINGS_ARE_EQUAL(SendStr, "1"))
 					{
 						sprintf(SendStr, "%s:%s", CLIENT_VERSUS, argv[3]);
@@ -197,7 +208,7 @@ int MainClient(char *ip,int port,char *argv[])
 					}
 					if (STRINGS_ARE_EQUAL(SendStr, "2"))
 					{
-
+						state = 4;
 						free(recv);
 						break;
 					}
@@ -213,13 +224,12 @@ int MainClient(char *ip,int port,char *argv[])
 			if (RecvRes == TRNS_FAILED)
 			{
 				printf("Socket error while trying to write data to socket\n");
-				return 0x555;
+				return ERROR_CODE;
 			}
 			else if (RecvRes == TRNS_DISCONNECTED)
 			{
 				printf("Server closed connection. Bye!\n");
-				i = 0;
-				return 0x555;
+				return ERROR_CODE;
 			}
 			else
 			{
@@ -242,13 +252,12 @@ int MainClient(char *ip,int port,char *argv[])
 				if (RecvRes == TRNS_FAILED)
 				{
 					printf("Socket error while trying to write data to socket\n");
-					return 0x555;
+					return ERROR_CODE;
 				}
 				else if (RecvRes == TRNS_DISCONNECTED)
 				{
 					printf("Server closed connection. Bye!\n");
-					i = 0;
-					return 0x555;
+					return ERROR_CODE;
 				}
 				else
 				{
@@ -280,6 +289,11 @@ int MainClient(char *ip,int port,char *argv[])
 
 			}
 			break;
+		case 4:
+			sprintf(SendStr, "%s:%s", CLIENT_DISCONNECT, argv[3]);
+			SendRes = SendString(SendStr, m_socket);
+			i = 0;
+			break;
 		default:
 			break;
 		}
@@ -296,7 +310,7 @@ int MainClient(char *ip,int port,char *argv[])
 
 	WSACleanup();
 
-	return -1;
+	return 0;
 }
 
 
@@ -306,8 +320,9 @@ int MainClient(char *ip,int port,char *argv[])
 
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
-	MainClient(argv[1],atoi(argv[2]),argv);
-	return exitcode; // Returns 0 if returned sucsessfuly, 0x555 else
+	
+	return MainClient(argv[1], atoi(argv[2]), argv);
+	
 }
 
 

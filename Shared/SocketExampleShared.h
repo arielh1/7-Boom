@@ -29,7 +29,7 @@
 #define CLIENT_REQUEST "CLIENT_REQUEST:"
 #define CLIENT_VERSUS "CLIENT_VERSUS"
 #define CLIENT_PLAYER_MOVE "CLIENT_PLAYER_MOVE:"
-#define CLIENT_DISCONNECT "CLIENT_DISCONNECT\n"
+#define CLIENT_DISCONNECT "CLIENT_DISCONNECT"
 #define CLIENT_ILLEGAL_COMMAND "Error: Illegal command\n"
 
 
@@ -69,6 +69,8 @@
 #define ERROR_IN_WAITING_TIME "Error when waiting for thread\n"
 #define MEMORY_ALLOCATION_FALIURE_MEESAGE "Memory allocation failed\n"
 #define ARGUMENTS_POINTER_NULL "Arguments Pointer to manage_calculations is NULL\n"
+#define CLIENT_CHOOSE_P_Q "Choose what to do next:\n1. Play against another client\n2. Quit\n"
+#define CLIENT_CHOOSE_T_E "Failed connecting to server on %s:%s.\n1. Try to reconnect\n2. Exit\n"
 
 #define WRITE_TO_LOG_MSG_TRN_FAIL "message transfer failed. Exiting.\n"
 #define WRITE_TO_LOG_MSG_DISCCONECT "Player disconnected. Exiting.\n"
@@ -78,6 +80,7 @@
 #define MAX_LINE 100
 #define TXT_TYPE ".txt"
 #define OUTPUT_DIRECTORY "./Output"
+
 
 #define SERVER_APPROVED "SERVER_APPROVED\n"
 #define SERVER_MAIN_MENU "SERVER_MAIN_MENU\n"
