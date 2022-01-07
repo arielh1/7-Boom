@@ -25,7 +25,7 @@
       <Filter>shared</Filter>
     </ClCompile>
     <ClCompile Include="..\Shared\helper_function.c">
-      <Filter>Source Files</Filter>
+      <Filter>shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -35,8 +35,11 @@
     <ClInclude Include="..\Shared\SocketSendRecvTools.h">
       <Filter>shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\Shared\helper_function.h">
+    <ClInclude Include="main_client.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\helper_function.h">
+      <Filter>shared</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

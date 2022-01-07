@@ -1,9 +1,9 @@
 
 #include "../Shared/SocketExampleShared.h"
 #include "../Shared/SocketSendRecvTools.h"
+
+
 #include "game.h"
-
-
 
 int is_seven_boom(int number) {
 	return (number % 7 == 0);
@@ -16,7 +16,9 @@ int game_start() {//TODO ERROR
 	return 0;
 	
 }
-int game_step(int number) {
-	int num = (number);
-	return num%7==0;
+
+int seven_appeared(char* snum) {
+
+	return (strstr(snum, "7") != NULL);
+
 }
