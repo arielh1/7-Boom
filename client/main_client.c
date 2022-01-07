@@ -188,7 +188,7 @@ int MainClient(char *ip,int port,char *argv[])
 			}
 			else
 			{
-				printf("thie messafe from server is:%s", recv);
+				printf("this messae from server is:%s", recv);
 
 				if (strstr(recv, SERVER_MAIN_MENU)) {
 					printf("%s",CLIENT_CHOOSE_P_Q);
@@ -233,7 +233,7 @@ int MainClient(char *ip,int port,char *argv[])
 			}
 			else
 			{
-				printf("thie message from server is:%s\n", recv);
+				printf("this message from server is:%s\n", recv);
 
 				if (strstr(recv, GAME_STARTED)) {
 

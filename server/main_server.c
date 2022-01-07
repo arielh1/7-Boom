@@ -406,7 +406,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					}
 
 					printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
-					if (game_step((number)) == 1)
+					if ((is_seven_boom(number) == 1)|| (seven_appeared(AcceptedStr)==1))
 					{
 						if (strcmp("boom", AcceptedStr) != 0)
 						{
@@ -416,6 +416,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 							game_on = 0;
 							break;
 						}
+
 					}
 					else {
 						if (atoi(AcceptedStr) != number) {
