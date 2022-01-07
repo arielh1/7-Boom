@@ -258,7 +258,7 @@ int send_failed(TransferResult_t SendRes, thread_service_arg* thread_argv) {
 
 
 
-int seven_boom(TransferResult_t RecvRes, thread_service_arg* thread_argv,int number,int state,int Done) {
+int seven_boom(TransferResult_t RecvRes, thread_service_arg* thread_argv,int number,int Done) {
 
 	char snum[50];
 	char* AcceptedStr = NULL;
@@ -290,21 +290,21 @@ int seven_boom(TransferResult_t RecvRes, thread_service_arg* thread_argv,int num
 
 		if (strcmp("boom", AcceptedStr) != 0)
 		{
-			state = 4;
+	
 			win = (thread_argv->player_index == 1) ? 2 : 1;
 			Done = 1;
 			game_on = 0;
-			return 0;
+			return 4;
 		}
 
 	}
 	else {
 		if (atoi(AcceptedStr) != number) {
-			state = 4;
+	
 			game_on = 0;
 			win = (thread_argv->player_index == 1) ? 2 : 1;
 			Done = 1;
-			return 0;
+			return 4;
 		}
 	}
 	free(AcceptedStr);
@@ -422,7 +422,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					SendRes = SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket);
 					send_failed(SendRes, thread_argv);
 
-					seven_boom(RecvRes, thread_argv, number, state, Done);
+				state=	seven_boom(RecvRes, thread_argv, number,  Done);
 /*
 					char* AcceptedStr = NULL;
 
@@ -491,22 +491,18 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
 					number_of_player--;
 					state = 1;
+					break;
+					
 				}
+
+				
+				
 			}
+		
 			break;
 		case 4:
 			number_of_player--;
-			if ((thread_argv->player_index == 1)) {
-				ReleaseSemaphore(semaphore_client_2_turn, 1, NULL);
-				samp2++;
-			}
-			if (thread_argv->player_index == 2 )
-			{
-				ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
-				samp1++;
-			}
 			(thread_argv->player_index == win) ? sprintf(SendStr, "%s you won\n", GAME_ENDED) : sprintf(SendStr, "%s you lost\n", GAME_ENDED);
-	
 			SendRes = SendString(SendStr, thread_argv->player_socket);
 			send_failed(SendRes, thread_argv);
 		 printf("game end \n");
