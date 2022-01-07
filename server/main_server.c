@@ -26,7 +26,7 @@ int samp1;
 int samp2;
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
-#define NUM_OF_WORKER_THREADS 2
+#define NUM_OF_WORKER_THREADS 3
 
 #define MAX_LOOPS 2
 
@@ -41,17 +41,19 @@ SOCKET ThreadInputs[NUM_OF_WORKER_THREADS];
 
 static int FindFirstUnusedThreadSlot();
 static void CleanupWorkerThreads();
+
 static DWORD ServiceThread(thread_service_arg *thread_argv);
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 void MainServer(int port)
 {
-	thread_service_arg player_array[2];
-	
+	thread_service_arg player_array[3];
+	TransferResult_t SendRes;
 	SOCKET MainSocket = INVALID_SOCKET;
 	unsigned long Address;
 	SOCKADDR_IN service;
+
 	
 	int server_run = 1, ListenRes, bindRes, Ind, Loop = 0, index_player = 0;
 	// Initialize Winsock.
@@ -106,35 +108,38 @@ void MainServer(int port)
 	for (Ind = 0; Ind < NUM_OF_WORKER_THREADS; Ind++)
 		ThreadHandles[Ind] = NULL;
 	Ind = 0;
+	game_start();
 	printf("Waiting for a client to connect...\n");
-	semaphore_clinet_connect = CreateSemaphore(0, 2, 2, NULL);
+	semaphore_clinet_connect = CreateSemaphore(0, 0, 1, NULL);
 	while (server_run) {
-		
-			WaitForSingleObject(semaphore_clinet_connect, INFINITE);
-			player_array[Ind].player_socket = accept(MainSocket, NULL, NULL);
-		
-	
-			if (player_array[Ind].player_socket == INVALID_SOCKET)
+			player_array[index_player].player_socket = accept(MainSocket, NULL, NULL);
+			player_array[index_player].player_number = index_player;
+			if (player_array[index_player].player_socket == INVALID_SOCKET)
 			{
 				printf("Accepting connection with client failed, error %ld\n", WSAGetLastError());
 				goto server_cleanup_3;
 			}
+			printf("new connect witn index:%d\n", index_player);
+
 			
-				ThreadInputs[Ind] = player_array[Ind].player_socket;
-				ThreadHandles[Ind] = CreateThread(
+
+				ThreadInputs[index_player] = player_array[index_player].player_socket;
+				ThreadHandles[index_player] = CreateThread(
 					NULL,
 					0,
 					(LPTHREAD_START_ROUTINE)ServiceThread,
-					&player_array[Ind],
+					&player_array[index_player],
 					0,
 					NULL
 				);
-	
-			Ind = FindFirstUnusedThreadSlot();
-			if (ThreadHandles[0]==NULL|| ThreadHandles[1]==NULL)
-				continue;
-			printf(" 2 Clients Connected.\n");
-			game_start();
+			
+				
+				if (index_player == 2) {
+					WaitForSingleObject(ThreadHandles[index_player], INFINITE);
+				}
+				WaitForSingleObject(semaphore_clinet_connect, INFINITE);
+				index_player = FindFirstUnusedThreadSlot();
+		
 			
 	}
 
@@ -244,6 +249,22 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 			if (strstr(recv, CLIENT_REQUEST)) {
 				strcpy(thread_argv->player_name, recv);
 				free(recv);
+				if (thread_argv->player_number > 1)
+				{
+					SendRes = SendString(SERVER_DENIED, thread_argv->player_socket);
+					if (SendRes == TRNS_FAILED)
+					{
+						printf("Service socket error while writing, closing thread.\n");
+						closesocket(thread_argv->player_socket);
+						ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+						return 1;
+					}
+					ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+					closesocket(thread_argv->player_socket);
+					return 0;
+				
+				}
+				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
 				SendRes = SendString(SERVER_APPROVED, thread_argv->player_socket);
 				if (SendRes == TRNS_FAILED)
 				{
@@ -254,7 +275,6 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					return 1;
 				}
 				state = 1;
-
 				break;
 			}
 			free(recv);

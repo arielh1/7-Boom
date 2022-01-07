@@ -90,7 +90,7 @@ int MainClient(char *ip,int port,char *argv[])
 	char SendStr[2560], * recv = NULL, * input_client = NULL;
 	SOCKADDR_IN clientService;
 //	HANDLE hThread[2];
-	int state = 0;
+	int state = 5;
 	// Initialize Winsock.
 	WSADATA wsaData; //Create a WSADATA object called wsaData.
 	//The WSADATA structure contains information about the Windows Sockets implementation.
@@ -117,24 +117,7 @@ int MainClient(char *ip,int port,char *argv[])
 	clientService.sin_addr.s_addr = inet_addr(ip); //Setting the IP address to connect to
 	clientService.sin_port = htons(port); //Setting the port to connect to.
 
-	while ((connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR)) {
-		 {
-			printf(CLIENT_CHOOSE_T_E, ip, argv[2]);
-			gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-			if (STRINGS_ARE_EQUAL(SendStr, "1"))
-			{
-				continue;
-			}
-			if (STRINGS_ARE_EQUAL(SendStr, "2"))
-			{
-				return 0;
-			}
-			printf("this messase not good pls type again\n");
-			WSACleanup();
-		}
-		
-	}
-	printf("connect.\n");
+	
 
 	
 	TransferResult_t SendRes;
@@ -143,7 +126,8 @@ int MainClient(char *ip,int port,char *argv[])
 	while (i) {
 		switch (state)
 		{
-		case 0:
+		case 0: 
+		{
 			sprintf(SendStr, "%s:%s", CLIENT_REQUEST, argv[3]);
 			SendRes = SendString(SendStr, m_socket);
 			if (SendRes == TRNS_FAILED)
@@ -160,7 +144,7 @@ int MainClient(char *ip,int port,char *argv[])
 			else if (RecvRes == TRNS_DISCONNECTED)
 			{
 				printf("Server closed connection. Bye!\n");
-		
+
 				return ERROR_CODE;
 			}
 			else
@@ -170,9 +154,18 @@ int MainClient(char *ip,int port,char *argv[])
 			if (strstr(recv, SERVER_APPROVED)) {
 				state = 1;
 				free(recv);
+				break;
 			}
+
+			if (strstr(recv, SERVER_DENIED)) {
+				state = 0;
+				free(recv);
+				break;
+			}
+		}
 			break;
 		case 1:
+		{
 			recv = NULL;
 			RecvRes = ReceiveString(&recv, m_socket);
 			if (RecvRes == TRNS_FAILED)
@@ -183,7 +176,7 @@ int MainClient(char *ip,int port,char *argv[])
 			else if (RecvRes == TRNS_DISCONNECTED)
 			{
 				printf("Server closed connection. Bye!\n");
-			
+
 				return ERROR_CODE;
 			}
 			else
@@ -191,7 +184,7 @@ int MainClient(char *ip,int port,char *argv[])
 				printf("this messae from server is:%s", recv);
 
 				if (strstr(recv, SERVER_MAIN_MENU)) {
-					printf("%s",CLIENT_CHOOSE_P_Q);
+					printf("%s", CLIENT_CHOOSE_P_Q);
 					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
 					if (STRINGS_ARE_EQUAL(SendStr, "1"))
 					{
@@ -217,8 +210,9 @@ int MainClient(char *ip,int port,char *argv[])
 					break;
 				}
 			}
+		}
 			break;
-		case 2:
+		case 2: {
 			recv = NULL;
 			RecvRes = ReceiveString(&recv, m_socket);
 			if (RecvRes == TRNS_FAILED)
@@ -242,6 +236,7 @@ int MainClient(char *ip,int port,char *argv[])
 					break;
 				}
 			}
+		}
 			break;
 		case 3:
 			
@@ -292,8 +287,36 @@ int MainClient(char *ip,int port,char *argv[])
 		case 4:
 			sprintf(SendStr, "%s:%s", CLIENT_DISCONNECT, argv[3]);
 			SendRes = SendString(SendStr, m_socket);
+			if (SendRes == TRNS_FAILED)
+			{
+				printf("Socket error while trying to write data to socket\n");
+				return ERROR_CODE;
+			}
 			i = 0;
 			break;
+		case 5:
+		{
+			while ((connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR)) {
+				{
+					printf(CLIENT_CHOOSE_T_E, ip, argv[2]);
+					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+					if (STRINGS_ARE_EQUAL(SendStr, "1"))
+					{
+						continue;
+					}
+					if (STRINGS_ARE_EQUAL(SendStr, "2"))
+					{
+						return 0;
+					}
+					printf("this messase not good pls type again\n");
+					//WSACleanup();
+				}
+
+			}
+			state = 0;
+			printf("connect.\n");
+			break;
+		}
 		default:
 			break;
 		}

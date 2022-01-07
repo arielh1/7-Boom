@@ -10,6 +10,7 @@ void MainServer(int port);
 typedef struct thread_service_arg {
 	char player_name[MAX_LEN_NAME];
 	int player_index;
+	int player_number;
 	SOCKET player_socket;
 }thread_service_arg;
 
