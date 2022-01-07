@@ -90,7 +90,7 @@ static DWORD SendDataThread(char *argv[])
 
 
 
-int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[], int state) {
+int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[]) {
 	do {
 		gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
 		if (STRINGS_ARE_EQUAL(SendStr, "1"))
@@ -103,15 +103,15 @@ int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[], int stat
 				free(recv);
 				return 0x555;
 			}
-			state = 2;
+			return 2;
 			
-			return 1;
+	
 		}
 		else if (STRINGS_ARE_EQUAL(SendStr, "2"))
 		{
-			state = 4;
+			
 			free(recv);
-			return 1;
+			return 4;
 		}
 		printf("this messase is not good please type again\n");
 	} while (1);
@@ -235,7 +235,7 @@ int MainClient(char *ip,int port,char *argv[])
 				printf("this messae from server is:%s", recv);
 				if (strstr(recv, SERVER_MAIN_MENU)) {
 					printf("%s",CLIENT_CHOOSE_P_Q);
-					play_or_quit(SendStr, SendRes, argv, state);
+					state=play_or_quit(SendStr, SendRes, argv);
 					free(recv);
 					break;
 				}
@@ -262,6 +262,7 @@ int MainClient(char *ip,int port,char *argv[])
 			while (1)
 			{
 				recv = NULL;
+				RecvRes = ReceiveString(&recv, m_socket);
 
 				if (check_failed_disconnected(RecvRes) == 0)
 				{
@@ -280,7 +281,7 @@ int MainClient(char *ip,int port,char *argv[])
 							return 0x555;
 						}
 						
-						break;
+						//break;
 					}
 					if (strstr(recv, GAME_ENDED)) {
 

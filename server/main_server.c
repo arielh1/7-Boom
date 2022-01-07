@@ -214,7 +214,7 @@ static void CleanupWorkerThreads()
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread_argv){
-	RecvRes = ReceiveString(&recv, thread_argv->player_socket);
+	
 	if (RecvRes == TRNS_FAILED)
 	{
 		printf("Socket error while trying to write data to socket\n");
@@ -249,8 +249,68 @@ int send_failed(TransferResult_t SendRes, thread_service_arg* thread_argv) {
 
 }
 
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
+
+
+int seven_boom(TransferResult_t RecvRes, thread_service_arg* thread_argv,int number,int state,int Done) {
+
+	char snum[50];
+	char* AcceptedStr = NULL;
+
+	RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
+	if (RecvRes == TRNS_FAILED)
+	{
+		printf("Service socket error while reading, closing thread.\n");
+
+		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+		closesocket(thread_argv->player_socket);
+		return 1;
+	}
+	else if (RecvRes == TRNS_DISCONNECTED)
+	{
+		printf("Connection closed while reading, closing thread.\n");
+
+		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+		closesocket(thread_argv->player_socket);
+		return 1;
+	}
+
+	printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
+	sprintf(snum, "%d", number);
+	if ((is_seven_boom(number) == 1) || (seven_appeared(snum) == 1))
+	{
+		char snum[50];
+		sprintf(snum, "%d", number);
+
+		if (strcmp("boom", AcceptedStr) != 0)
+		{
+			state = 4;
+			win = (thread_argv->player_index == 1) ? 2 : 1;
+			Done = 1;
+			game_on = 0;
+			return 0;
+		}
+
+	}
+	else {
+		if (atoi(AcceptedStr) != number) {
+			state = 4;
+			game_on = 0;
+			win = (thread_argv->player_index == 1) ? 2 : 1;
+			Done = 1;
+			return 0;
+		}
+	}
+	free(AcceptedStr);
+	return 0;
+}
+
+
+
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
 
 //Service thread is the thread that opens for each successful client connection and "talks" to the client.
 static DWORD ServiceThread(thread_service_arg* thread_argv)
@@ -340,18 +400,12 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 
 				if (game_on == 1) {
 					SendRes = SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket);
-					if (SendRes == TRNS_FAILED)
-					{
-						printf("Service socket error while writing, closing thread.\n");
-						closesocket(thread_argv->player_socket);
+					send_failed(SendRes, thread_argv);
 
-						ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-						return 1;
-					}
-
+					seven_boom(RecvRes, thread_argv, number, state, Done);
+/*
 					char* AcceptedStr = NULL;
-					char snum[50];
-			//		char* AcceptedStr_demo = NULL;
+
 					RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
 					if (RecvRes == TRNS_FAILED)
 					{
@@ -369,9 +423,9 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 						closesocket(thread_argv->player_socket);
 						return 1;
 					}
-					sprintf(snum, "%d", number);
+
 					printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
-		//			strcpy(AcceptedStr_demo, AcceptedStr);
+
 					if ((is_seven_boom(number) == 1) || (seven_appeared(snum)==1))
 					{
 						if (strcmp("boom", AcceptedStr) != 0)
@@ -393,7 +447,9 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 							break;
 						}
 					}
-					free(AcceptedStr);
+						free(AcceptedStr);
+					*/
+				
 			
 					if (thread_argv->player_index == 1) {
 						ReleaseSemaphore(semaphore_client_2_turn, 1, NULL); 
@@ -409,14 +465,8 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 				else {
 					sprintf(SendStr, "%s you won\n", GAME_ENDED);
 					SendRes = SendString(SendStr, thread_argv->player_socket);
-					if (SendRes == TRNS_FAILED)
-					{
-						printf("Service socket error while writing, closing thread.\n");
-						closesocket(thread_argv->player_socket);
+					send_failed(SendRes, thread_argv);
 
-						ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-						return 1;
-					}
 					printf("game end \n");
 					ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
 					number_of_player--;
