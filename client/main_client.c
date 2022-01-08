@@ -472,25 +472,16 @@ int MainClient(char *ip,int port,char *argv[])
 
 	// Create a socket.
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-	// Check for errors to ensure that the socket is a valid socket.
 	if (m_socket == INVALID_SOCKET) {
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		WSACleanup();
 		return ERROR_CODE;
 	}
-
 	clientService.sin_family = AF_INET;
 	clientService.sin_addr.s_addr = inet_addr(ip); //Setting the IP address to connect to
 	clientService.sin_port = htons(port); //Setting the port to connect to.
-
+	set_timeout(m_socket, (DWORD)RESPOND_TIME);
 	
-	set_timeout(m_socket, 15000);
-
-	state_machine(clientService, ip, argv, file_name);
-	
-
-/*
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
 	Message message;
@@ -528,10 +519,7 @@ int MainClient(char *ip,int port,char *argv[])
 				printf("Server closed connection. Bye!\n");
 				return ERROR_CODE;
 			}
-			else
-			{
-				printf("this message from server is:%s", recv);
-			}
+			
 			if (strstr(recv, SERVER_APPROVED)) {
 				decode_message("SERVER_APPROVED", &message, "received");
 				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -545,6 +533,7 @@ int MainClient(char *ip,int port,char *argv[])
 
 			if (strstr(recv, SERVER_DENIED)) {
 				decode_message(SERVER_DENIED, &message, "received");
+				printf("Server on %s:%s  denied the connection request.\n",argv[1],argv[2]);
 				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
 					return ERROR_CODE;
@@ -629,9 +618,10 @@ int MainClient(char *ip,int port,char *argv[])
 
 			if(check_failed_disconnected(RecvRes)==0)
 			{
-				printf("this message from server is:%s\n", recv);
+				
 
 				if (strstr(recv, GAME_STARTED)) {
+					printf("Game is on!\n");
 					decode_message("GAME_STARTED", &message, "received");
 					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -743,6 +733,16 @@ int MainClient(char *ip,int port,char *argv[])
 					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
 					if (STRINGS_ARE_EQUAL(SendStr, "1"))
 					{
+						m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+						if (m_socket == INVALID_SOCKET) {
+							printf("Error at socket(): %ld\n", WSAGetLastError());
+							WSACleanup();
+							return ERROR_CODE;
+						}
+						clientService.sin_family = AF_INET;
+						clientService.sin_addr.s_addr = inet_addr(ip); //Setting the IP address to connect to
+						clientService.sin_port = htons(port); //Setting the port to connect to.
+						set_timeout(m_socket, (DWORD)RESPOND_TIME);
 						continue;
 					}
 					if (STRINGS_ARE_EQUAL(SendStr, "2"))
@@ -755,7 +755,7 @@ int MainClient(char *ip,int port,char *argv[])
 
 			}
 			state = 0;
-			printf("connect.\n");
+			
 			break;
 		}
 		default:

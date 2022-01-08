@@ -522,9 +522,10 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 		}
 			break;
 		case 2:
-			printf("game start for %s\n", thread_argv->player_name);
+			
 			SendRes = SendString(GAME_STARTED, thread_argv->player_socket);
 			send_failed(SendRes, thread_argv);
+			player_move[thread_argv->player_index - 1] = 0;
 			decode_message("GAME_STARTED", &message, "sent");
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
