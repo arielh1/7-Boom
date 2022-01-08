@@ -26,7 +26,7 @@
 #define RECIVED_FROM_SERVER "received from server-"
 #define SERVER_CONNECTION_FAILIURE "Failed Connecting to Server on "
 #define SERVER_CONNECTION_APPROVED "Connected to server on"
-#define CLIENT_REQUEST "CLIENT_REQUEST:"
+#define CLIENT_REQUEST "CLIENT_REQUEST"
 #define CLIENT_VERSUS "CLIENT_VERSUS"
 #define CLIENT_PLAYER_MOVE "CLIENT_PLAYER_MOVE:"
 #define CLIENT_DISCONNECT "CLIENT_DISCONNECT"
@@ -105,10 +105,6 @@
 #define WRITE 2
 #define TIMEOUT -2
 #define TIMEOUT_15_SEC 15
-typedef struct Message {
-	char* message_type;
-	char* param[MAX_PARAM_NUM];
-}Message;
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 

@@ -49,7 +49,7 @@ static DWORD ServiceThread(thread_service_arg *thread_argv);
 void MainServer(int port)
 {
 	thread_service_arg player_array[3];
-	TransferResult_t SendRes;
+
 	SOCKET MainSocket = INVALID_SOCKET;
 	unsigned long Address;
 	SOCKADDR_IN service;
@@ -112,7 +112,9 @@ void MainServer(int port)
 	printf("Waiting for a client to connect...\n");
 	semaphore_clinet_connect = CreateSemaphore(0, 0, 1, NULL);
 	while (server_run) {
+		
 			player_array[index_player].player_socket = accept(MainSocket, NULL, NULL);
+		
 			player_array[index_player].player_number = index_player;
 			if (player_array[index_player].player_socket == INVALID_SOCKET)
 			{
@@ -135,10 +137,16 @@ void MainServer(int port)
 			
 				
 				if (index_player == 2) {
+				
 					WaitForSingleObject(ThreadHandles[index_player], INFINITE);
+				
+				
+
 				}
-				WaitForSingleObject(semaphore_clinet_connect, INFINITE);
+			//	WaitForSingleObject(semaphore_clinet_connect, INFINITE);
 				index_player = FindFirstUnusedThreadSlot();
+
+
 		
 			
 	}
@@ -224,14 +232,14 @@ int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread
 	{
 		printf("Socket error while trying to write data to socket\n");
 
-		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+	/*	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);*/
 		return 0x555;
 	}
 	else if (RecvRes == TRNS_DISCONNECTED)
 	{
 		printf("Server closed connection. Bye!\n");
 
-		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+		/*ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);*/
 		return 0x555;
 	}
 	else
@@ -247,7 +255,7 @@ int send_failed(TransferResult_t SendRes, thread_service_arg* thread_argv) {
 		printf("Service socket error while writing, closing thread.\n");
 		closesocket(thread_argv->player_socket);
 
-		ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+	//	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
 		return 1;
 	}
 	return 0;
@@ -320,24 +328,30 @@ int seven_boom(TransferResult_t RecvRes, thread_service_arg* thread_argv,int num
 //Service thread is the thread that opens for each successful client connection and "talks" to the client.
 static DWORD ServiceThread(thread_service_arg* thread_argv)
 {
-	char SendStr[SEND_STR_SIZE], *recv =NULL;
+	char SendStr[SEND_STR_SIZE], * recv = NULL, * input_file_str = NULL, file_name[1000] = { 0 };
 	int  state = 0, number;
 	BOOL Done = FALSE;
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
+	Message message;
 	char* AcceptedStr = NULL;
 	while (1) {
 		switch (state)
 		{
-		case 0:
+		case 0: {
 			RecvRes = ReceiveString(&recv, thread_argv->player_socket);
-
-			if(rec_failed_disconnected(RecvRes, thread_argv)==0)
+			if (rec_failed_disconnected(RecvRes, thread_argv) != 0)
 			{
-				printf("thie message from client is:%s\n", recv);
+				return -1;
 			}
-			if (strstr(recv, CLIENT_REQUEST)) {
-				strcpy(thread_argv->player_name, recv);
+			decode_message(recv, &message, "received");
+			if (strstr(message.message_type, CLIENT_REQUEST)) {
+				strcpy(thread_argv->player_name, message.param[0]);
+				sprintf(file_name, "thread_log_%s.txt", thread_argv->player_name);
+				if (write_to_file(file_name, message.log_file_format, 0, strlen(message.log_file_format)) != SUCCESS_CODE) {
+					printf(WRITE_TO_FILE_ERROR_MESSAGE);
+					return ERROR_CODE;
+				}
 				free(recv);
 				if (thread_argv->player_number > 1)
 				{
@@ -346,32 +360,64 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					{
 						printf("Service socket error while writing, closing thread.\n");
 						closesocket(thread_argv->player_socket);
-						ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+						//	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
 						return 1;
 					}
-					ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+					decode_message("SERVER_DENIED", &message, "sent");
+					if (write_to_file(file_name, message.log_file_format, 0, strlen(message.log_file_format)) != SUCCESS_CODE) {
+						printf(WRITE_TO_FILE_ERROR_MESSAGE);
+						return ERROR_CODE;
+					}
+
 					closesocket(thread_argv->player_socket);
 					return 0;
-				
+
 				}
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+				decode_message("SERVER_APPROVED", &message, "sent");
+				if (write_to_file(file_name, message.log_file_format, 0, strlen(message.log_file_format)) != SUCCESS_CODE) {
+					printf(WRITE_TO_FILE_ERROR_MESSAGE);
+					return ERROR_CODE;
+				}
+				//ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
 				SendRes = SendString(SERVER_APPROVED, thread_argv->player_socket);
-				send_failed(SendRes, thread_argv);
+				if (SendRes == TRNS_FAILED)
+				{
+					printf("Service socket error while writing, closing thread.\n");
+					closesocket(thread_argv->player_socket);
+					//	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+					return 1;
+				}
 				state = 1;
 				break;
 			}
 			free(recv);
+		}
 			break;
 		case 1:
-			SendRes = SendString(SERVER_MAIN_MENU, thread_argv->player_socket);
-			send_failed(SendRes, thread_argv);
-
+		{
+			if (SendString(SERVER_MAIN_MENU, thread_argv->player_socket) == TRNS_FAILED)
+			{
+				printf("Service socket error while writing, closing thread.\n");
+				closesocket(thread_argv->player_socket);
+				//	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+				return 1;
+			}
+			decode_message("SERVER_MAIN_MENU", &message, "sent");
+			if (write_to_file(file_name, message.log_file_format, 0, strlen(message.log_file_format)) != SUCCESS_CODE) {
+				printf(WRITE_TO_FILE_ERROR_MESSAGE);
+				return ERROR_CODE;
+			}
 			recv = NULL;
 			RecvRes = ReceiveString(&recv, thread_argv->player_socket);
-
-			rec_failed_disconnected(RecvRes, thread_argv);
-
+			if (rec_failed_disconnected(RecvRes, thread_argv) != 0) {
+				return -1;
+			}
 			if (strstr(recv, CLIENT_VERSUS)) {
+				decode_message(recv, &message, "received");
+				if (write_to_file(file_name, message.log_file_format, 0, strlen(message.log_file_format)) != SUCCESS_CODE) {
+					printf(WRITE_TO_FILE_ERROR_MESSAGE);
+					return ERROR_CODE;
+				}
 				free(recv);
 				while (number_of_player == 2);
 				number_of_player++;
@@ -379,34 +425,39 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 				if (number_of_player == 1)
 					thread_argv->player_index = 1;
 				if (number_of_player == 2) {
-				
+
 					thread_argv->player_index = 2;
 				}
 				number = thread_argv->player_index;
 				while (number_of_player < 2);
-				
 				game_on = 1;
-			
 				state = 2;
-
 				break;
 			}
 			if (strstr(recv, CLIENT_DISCONNECT)) {
-				printf("this message from client is:%s\n", recv);
+				decode_message(recv, &message, "received");
+				if (write_to_file(file_name, message.log_file_format, 0, strlen(message.log_file_format)) != SUCCESS_CODE) {
+					printf(WRITE_TO_FILE_ERROR_MESSAGE);
+					return ERROR_CODE;
+				}
 				closesocket(thread_argv->player_socket);
-
-				ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+				/*	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);*/
 				return 0;
 			}
+		}
 			break;
 		case 2:
-			printf("game start\n");
+			printf("game start for %s\n", thread_argv->player_name);
 			SendRes = SendString(GAME_STARTED, thread_argv->player_socket);
 			send_failed(SendRes, thread_argv);
+			decode_message("GAME_STARTED", &message, "sent");
+			if (write_to_file(file_name, message.log_file_format, 0, strlen(message.log_file_format)) != SUCCESS_CODE) {
+				printf(WRITE_TO_FILE_ERROR_MESSAGE);
+				return ERROR_CODE;
+			}
 			state = 3;
 			break;
 		case 3:
-
 			while (game_on)
 			{
 				if (thread_argv->player_index == 1) {
@@ -417,60 +468,10 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 					WaitForSingleObject(semaphore_client_2_turn, INFINITE);
 					samp2--;
 				}
-
 				if (game_on == 1) {
 					SendRes = SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket);
 					send_failed(SendRes, thread_argv);
-
 				state=	seven_boom(RecvRes, thread_argv, number,  Done);
-/*
-					char* AcceptedStr = NULL;
-
-					RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
-					if (RecvRes == TRNS_FAILED)
-					{
-						printf("Service socket error while reading, closing thread.\n");
-
-						ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-						closesocket(thread_argv->player_socket);
-						return 1;
-					}
-					else if (RecvRes == TRNS_DISCONNECTED)
-					{
-						printf("Connection closed while reading, closing thread.\n");
-
-						ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
-						closesocket(thread_argv->player_socket);
-						return 1;
-					}
-
-					printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
-
-					if ((is_seven_boom(number) == 1) || (seven_appeared(snum)==1))
-					{
-						if (strcmp("boom", AcceptedStr) != 0)
-						{
-							state = 4;
-							win = (thread_argv->player_index == 1) ? 2 : 1;
-							Done = 1;
-							game_on = 0;
-							break;
-						}
-
-					}
-					else {
-						if (atoi(AcceptedStr) != number) {
-							state = 4;
-							game_on = 0;
-							win = (thread_argv->player_index == 1) ? 2 : 1;
-							Done = 1;
-							break;
-						}
-					}
-						free(AcceptedStr);
-					*/
-				
-			
 					if (thread_argv->player_index == 1) {
 						ReleaseSemaphore(semaphore_client_2_turn, 1, NULL); 
 					}
@@ -514,8 +515,6 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 			break;
 
 		}
-
-
 	}
 
 

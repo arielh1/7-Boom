@@ -1,34 +1,13 @@
 #ifndef HELPER_FUNCTION
 #define HELPER_FUNCTION
+typedef struct Message {
+	char* message_type;
+	char* param[3];
+	char log_file_format[100];
+}Message;
 
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="mutex_handle"></param>
-/// <returns></returns>
-//int wait_for_mutex(HANDLE mutex_handle);
-/// <summary>
-/// 
-/// </summary>
-/// <param name="mutex_handle"></param>
-/// <returns></returns>
-//int release_mutex(HANDLE mutex_handle);
-/// <summary>
-/// 
-/// </summary>
-/// <param name="input"></param>
-/// <returns></returns>
-int decode_message( char* input);
-/// <summary>
-/// 
-/// </summary>
-/// <param name="write_file_name"></param>
-/// <param name="message"></param>
-/// <param name="offset"></param>
-/// <param name="size_of_file_to_write"></param>
-/// <returns></returns>
-int write_to_file(char* write_file_name, char* message, int offset, int size_of_file_to_write);
+int write_to_file(char* write_file_name, char* message);
 /// <summary>
 /// 
 /// </summary>
@@ -36,10 +15,10 @@ int write_to_file(char* write_file_name, char* message, int offset, int size_of_
 /// <param name="log_file"></param>
 /// <param name="input"></param>
 /// <returns></returns>
-int write_to_log_file(char* start, char* log_file, char* input);
+int write_to_log_file(char* log_file, char* input);
 
 
-
+int decode_message(char* input,Message * message,char * send_or_recv);
 #endif
 
 
