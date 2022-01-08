@@ -85,12 +85,7 @@ static DWORD SendDataThread(char *argv[])
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
-
-
-
-
-
-int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[]) {
+int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[],Message message,char *file_name) {
 	do {
 		gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
 		if (STRINGS_ARE_EQUAL(SendStr, "1"))
@@ -103,9 +98,13 @@ int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[]) {
 				free(recv);
 				return 0x555;
 			}
+			decode_message(CLIENT_VERSUS, &message, "sent");
+			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+				printf(WRITE_TO_FILE_ERROR_MESSAGE);
+				return ERROR_CODE;
+			}
 			return 2;
 			
-	
 		}
 		else if (STRINGS_ARE_EQUAL(SendStr, "2"))
 		{
@@ -116,10 +115,7 @@ int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[]) {
 		printf("this messase is not good please type again\n");
 	} while (1);
 }
-
-
-
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 int check_failed_disconnected(TransferResult_t RecvRes) {
 	if (RecvRes == TRNS_FAILED)
@@ -138,17 +134,12 @@ int check_failed_disconnected(TransferResult_t RecvRes) {
 }
 
 
-
-
-
-
-
-
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 int MainClient(char *ip,int port,char *argv[])
 {
-	char SendStr[2560], * recv = NULL,  input_client[500];
+	char SendStr[2560], * recv = NULL,  input_client[500], file_name[1000] = { 0 };
+//	char client_name[100];
 //	int input_is_valid=0;
 	SOCKADDR_IN clientService;
 //	HANDLE hThread[2];
@@ -184,6 +175,7 @@ int MainClient(char *ip,int port,char *argv[])
 	
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
+	Message message;
 	int i = 1;
 	while (i) {
 		switch (state)
@@ -197,7 +189,16 @@ int MainClient(char *ip,int port,char *argv[])
 				printf("Socket error while trying to write data to socket\n");
 				return ERROR_CODE;
 			}
-
+			sprintf(file_name, "client_log_%s.txt", argv[3]);
+			decode_message(CLIENT_REQUEST, &message, "sent");
+			if (strstr(message.message_type, CLIENT_REQUEST)) {
+		//		strcpy(client_name, message.param[0]);
+				sprintf(file_name, "client_log_%s.txt", argv[3]);
+				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+					printf(WRITE_TO_FILE_ERROR_MESSAGE);
+					return ERROR_CODE;
+				}
+			}
 			RecvRes = ReceiveString(&recv, m_socket);
 			if (RecvRes == TRNS_FAILED)
 			{
@@ -207,20 +208,29 @@ int MainClient(char *ip,int port,char *argv[])
 			else if (RecvRes == TRNS_DISCONNECTED)
 			{
 				printf("Server closed connection. Bye!\n");
-		
 				return ERROR_CODE;
 			}
 			else
 			{
-				printf("thie message from server is:%s", recv);
+				printf("this message from server is:%s", recv);
 			}
 			if (strstr(recv, SERVER_APPROVED)) {
+				decode_message("SERVER_APPROVED", &message, "received");
+				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+					printf(WRITE_TO_FILE_ERROR_MESSAGE);
+					return ERROR_CODE;
+				}
 				state = 1;
 				free(recv);
 				break;
 			}
 
 			if (strstr(recv, SERVER_DENIED)) {
+				decode_message(SERVER_DENIED, &message, "received");
+				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+					printf(WRITE_TO_FILE_ERROR_MESSAGE);
+					return ERROR_CODE;
+				}
 				state = 5;
 				free(recv);
 				break;
@@ -245,9 +255,15 @@ int MainClient(char *ip,int port,char *argv[])
 			}
 			else
 			{
-				printf("this messae from server is:%s", recv);
+				printf("this message from server is:%s", recv);
 				if (strstr(recv, SERVER_MAIN_MENU)) {
+					decode_message("SERVER_MAIN_MENU", &message, "received");
+					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+						printf(WRITE_TO_FILE_ERROR_MESSAGE);
+						return ERROR_CODE;
+					}
 					printf("%s",CLIENT_CHOOSE_P_Q);
+				do{
 					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
 					if (STRINGS_ARE_EQUAL(SendStr, "1"))
 					{
@@ -257,6 +273,11 @@ int MainClient(char *ip,int port,char *argv[])
 						{
 							printf("Socket error while trying to write data to socket\n");
 							return 0x555;
+						}
+						decode_message(CLIENT_VERSUS, &message, "sent");
+						if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+							printf(WRITE_TO_FILE_ERROR_MESSAGE);
+							return ERROR_CODE;
 						}
 						state = 2;
 						free(recv);
@@ -268,8 +289,9 @@ int MainClient(char *ip,int port,char *argv[])
 						free(recv);
 						break;
 					}
-					printf("this messase not good pls type again\n");
-					free(recv);
+					printf("this messase not good please type again\n");
+				} while (1);
+				
 					break;
 				}
 			}
@@ -284,6 +306,11 @@ int MainClient(char *ip,int port,char *argv[])
 				printf("this message from server is:%s\n", recv);
 
 				if (strstr(recv, GAME_STARTED)) {
+					decode_message("GAME_STARTED", &message, "received");
+					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+						printf(WRITE_TO_FILE_ERROR_MESSAGE);
+						return ERROR_CODE;
+					}
 
 					state = 3;
 					free(recv);
@@ -305,7 +332,12 @@ int MainClient(char *ip,int port,char *argv[])
 				}
 				printf("this message from server is:%s\n", recv);
 				if (strstr(recv, SERVER_MOVE_REQUEST)) {
-						printf("your turn\n", recv);
+					decode_message("SERVER_MOVE_REQUEST", &message, "received");
+					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+						printf(WRITE_TO_FILE_ERROR_MESSAGE);
+						return ERROR_CODE;
+					}
+						printf("%s your turn\n", recv);
 						gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
 					
 						sprintf(SendStr,"%s:%s\n", CLIENT_PLAYER_MOVE, input_client);
@@ -316,11 +348,19 @@ int MainClient(char *ip,int port,char *argv[])
 							printf("Socket error while trying to write data to socket\n");
 							return 0x555;
 						}
-						
+						decode_message(CLIENT_PLAYER_MOVE, &message, "sent");
+						if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+							printf(WRITE_TO_FILE_ERROR_MESSAGE);
+							return ERROR_CODE;
+						}
 						//break;
 					}
 				if (strstr(recv, GAME_ENDED)) {
-
+					decode_message("GAME_ENDED", &message, "received");
+					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+						printf(WRITE_TO_FILE_ERROR_MESSAGE);
+						return ERROR_CODE;
+					}
 						state = 1;
 
 						break;
@@ -336,6 +376,11 @@ int MainClient(char *ip,int port,char *argv[])
 			if (SendRes == TRNS_FAILED)
 			{
 				printf("Socket error while trying to write data to socket\n");
+				return ERROR_CODE;
+			}
+			decode_message(CLIENT_DISCONNECT, &message, "sent");
+			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
 			i = 0;
