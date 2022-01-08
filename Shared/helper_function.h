@@ -18,6 +18,7 @@ int write_to_file(char* write_file_name, char* message);
 int write_to_log_file(char* log_file, char* input);
 
 
+
 int decode_message(char* input,Message * message,char * send_or_recv);
 #endif
 

@@ -463,7 +463,7 @@ int MainClient(char *ip,int port,char *argv[])
 	//CloseHandle(hThread[1]);
 
 	closesocket(m_socket);
-
+	DeleteFileA(file_name);
 	WSACleanup();
 
 	return 0;

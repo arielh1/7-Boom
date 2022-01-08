@@ -16,6 +16,7 @@ int wait_for_mutex(HANDLE mutex_handle) {
 	return SUCCESS_CODE;
 }
 
+
 int release_mutex(HANDLE mutex_handle) {
 	BOOL ret_val;
 	ret_val = ReleaseMutex(mutex_handle);
@@ -50,7 +51,7 @@ int write_to_file(char* write_file_name, char* message) {
 		return ERROR_CODE;
 	}
 
-	bErrorFlag = WriteFile(hFile, message, dwBytesToWrite, dwBytesWritten, NULL);
+	bErrorFlag = WriteFile(hFile, message, dwBytesToWrite, &dwBytesWritten, NULL);
 	if (bErrorFlag == FALSE) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
 		return ERROR_CODE;
