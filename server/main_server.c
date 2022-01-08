@@ -23,13 +23,14 @@ int server_run = 1;
 int number_of_player=0 ;
 int game_on = 1;
 int win;
+
 int samp1;
 int samp2;
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 #define NUM_OF_WORKER_THREADS 3
 
-#define MAX_LOOPS 2
+#define MAX_LOOPS 3
 
 #define SEND_STR_SIZE 35
 
