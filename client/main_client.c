@@ -148,6 +148,7 @@ int check_failed_disconnected(TransferResult_t RecvRes) {
 
 int MainClient(char *ip,int port,char *argv[])
 {
+	Message message;
 	char SendStr[2560], * recv = NULL,  input_client[500];
 //	int input_is_valid=0;
 	SOCKADDR_IN clientService;
@@ -303,14 +304,24 @@ int MainClient(char *ip,int port,char *argv[])
 				{
 					return 0x555;
 				}
+				if (strstr(recv, GAME_VIEW)) {
+					decode_message(recv, &message, "received");
+					printf("move was %s\n%s\n", message.param[0], message.param[1]);
+					
+					
+					/*if (SendString(SendStr, m_socket) == TRNS_FAILED)
+					{
+						printf("Socket error while trying to write data to socket\n");
+						return 0x555;
+					}*/
+
+					//break;
+				}
 				printf("this message from server is:%s\n", recv);
 				if (strstr(recv, SERVER_MOVE_REQUEST)) {
-						printf("your turn\n", recv);
+						printf("Your turn\n");
 						gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
-					
 						sprintf(SendStr,"%s:%s\n", CLIENT_PLAYER_MOVE, input_client);
-						
-
 						if (SendString(SendStr, m_socket) == TRNS_FAILED)
 						{
 							printf("Socket error while trying to write data to socket\n");
@@ -319,6 +330,7 @@ int MainClient(char *ip,int port,char *argv[])
 						
 						//break;
 					}
+		
 				if (strstr(recv, GAME_ENDED)) {
 
 						state = 1;

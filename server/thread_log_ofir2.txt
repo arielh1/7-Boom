@@ -1,0 +1,16 @@
+received from server-CLIENT_REQUEST:ofir2
+sent from server-SERVER_APPROVED
+sent from server-SERVER_MAIN_MENU
+received from server-CLIENT_VERSUS:ofir2
+sent from server-GAME_STARTED
+sent from server-GAME_VIEW:1;CONT
+sent from server-SERVER_MOVE_REQUEST
+revice from server-CLIENT_PLAYER_MOVE:2
+sent from server-GAME_VIEW:3;CONT
+sent from server-SERVER_MOVE_REQUEST
+revice from server-CLIENT_PLAYER_MOVE:4
+sent from server-GAME_VIEW:5;CONT
+sent from server-SERVER_MOVE_REQUEST
+revice from server-CLIENT_PLAYER_MOVE:6
+sent from server-GAME_ENDED
+sent from server-SERVER_MAIN_MENU

@@ -23,9 +23,11 @@ int server_run = 1;
 int number_of_player=0 ;
 int game_on = 1;
 int win;
-
+char *name_player[2];
+char* player_move[2] = {NULL};
 int samp1;
 int samp2;
+
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 #define NUM_OF_WORKER_THREADS 3
@@ -35,7 +37,7 @@ int samp2;
 #define SEND_STR_SIZE 35
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-
+HANDLE semaphore_write;
 HANDLE ThreadHandles[NUM_OF_WORKER_THREADS];
 SOCKET ThreadInputs[NUM_OF_WORKER_THREADS];
 
@@ -130,7 +132,8 @@ void MainServer(int port)
 	game_start();
 	printf("Waiting for a client to connect...\n");
 	semaphore_clinet_connect = CreateSemaphore(0, 0, 1, NULL);
-	while (server_run) {
+	semaphore_write= CreateSemaphore(0, 1, 1, NULL);
+	while (server_run) {CreateSemaphore(0, 0, 1, NULL);
 		
 			player_array[index_player].player_socket = accept(MainSocket, NULL, NULL);
 		
@@ -290,6 +293,7 @@ int seven_boom( thread_service_arg* thread_argv,int number,int Done, Message *me
 	char snum[50];
 	char* AcceptedStr = NULL;
 	TransferResult_t RecvRes;
+	int state=0 ;
 	RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
 	if (RecvRes == TRNS_FAILED)
 	{
@@ -308,6 +312,7 @@ int seven_boom( thread_service_arg* thread_argv,int number,int Done, Message *me
 	//to do game view
 	printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
 	decode_message(AcceptedStr, message, "revice");
+player_move[thread_argv->player_index-1]=message->param[0];
 	if (write_to_file(file_name, message->log_file_format) != SUCCESS_CODE) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
 		return ERROR_CODE;
@@ -322,9 +327,9 @@ int seven_boom( thread_service_arg* thread_argv,int number,int Done, Message *me
 		{
 	
 			win = (thread_argv->player_index == 1) ? 2 : 1;
-			Done = 1;
+	
 			game_on = 0;
-			return 4;
+			state= 4;
 		}
 
 	}
@@ -333,16 +338,39 @@ int seven_boom( thread_service_arg* thread_argv,int number,int Done, Message *me
 	
 			game_on = 0;
 			win = (thread_argv->player_index == 1) ? 2 : 1;
-			Done = 1;
-			return 4;
+			
+			state= 4;
 		}
 	}
+	
+	
+	
 	free(AcceptedStr);
-	return 0;
+	return state;
 }
 
 
+int game_view(thread_service_arg* thread_argv, char* file_name) {
+	Message message;
+	char message_to_client[100]; 
+		if (player_move[(thread_argv->player_index ) % 2]!=NULL){
+			(game_on) ? sprintf(message_to_client, "%s:%s;CONT\n", GAME_VIEW, player_move[(thread_argv->player_index ) % 2]) : sprintf(message_to_client, "%s:%s;CONT\n", GAME_VIEW, player_move[(thread_argv->player_index + 1) % 2]);
 
+		if (SendString(message_to_client, thread_argv->player_socket) == TRNS_FAILED)
+		{
+			printf("Service socket error while writing, closing thread.\n");
+			closesocket(thread_argv->player_socket);
+			//	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+			return 1;
+		}
+		decode_message(message_to_client, &message, "sent");
+		if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			printf(WRITE_TO_FILE_ERROR_MESSAGE);
+			return ERROR_CODE;
+		}
+	}
+	return 0;
+}
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
@@ -356,7 +384,9 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
 	Message message;
+	HANDLE mutex_handle;
 	char* AcceptedStr = NULL;
+	mutex_handle = CreateMutexA(NULL, FALSE, NULL);
 	while (1) {
 		switch (state)
 		{
@@ -452,7 +482,11 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 				}
 				number = thread_argv->player_index;
 				while (number_of_player < 2);
+
+				WaitForSingleObject(semaphore_write, INFINITE);
 				game_on = 1;
+			name_player[number - 1]= thread_argv->player_name;
+				ReleaseSemaphore(semaphore_write,1,NULL);
 				state = 2;
 				break;
 			}
@@ -482,15 +516,20 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 		case 3:
 			while (game_on)
 			{
+				
 				if (thread_argv->player_index == 1) {
 					WaitForSingleObject(semaphore_client_1_turn, INFINITE);
+			
 					samp1--;
 				}
 				if (thread_argv->player_index == 2) {
 					WaitForSingleObject(semaphore_client_2_turn, INFINITE);
+			
 					samp2--;
 				}
+				
 				if (game_on == 1) {
+					game_view(thread_argv, file_name);
 					
 					if (SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket) == TRNS_FAILED)
 					{
@@ -506,7 +545,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 						return ERROR_CODE;
 					}
 					state = seven_boom( thread_argv, number, Done, &message, file_name);
-					
+				
 				
 					if (thread_argv->player_index == 1) {
 						ReleaseSemaphore(semaphore_client_2_turn, 1, NULL); 
@@ -575,6 +614,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
+	
 	CreateThread(
 		NULL,
 		0,
