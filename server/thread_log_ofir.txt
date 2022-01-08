@@ -9,3 +9,13 @@ sent from server-SERVER_MOVE_REQUEST
 revice from server-CLIENT_PLAYER_MOVE:3
 sent from server-SERVER_MAIN_MENU
 received from server-CLIENT_DISCONNECT:ofir
+received from server-CLIENT_REQUEST:ofir
+sent from server-SERVER_APPROVED
+sent from server-SERVER_MAIN_MENU
+received from server-CLIENT_VERSUS:ofir
+sent from server-GAME_STARTED
+sent from server-SERVER_MOVE_REQUEST
+revice from server-CLIENT_PLAYER_MOVE:2
+sent from server-GAME_ENDED
+sent from server-SERVER_MAIN_MENU
+received from server-CLIENT_VERSUS:ofir

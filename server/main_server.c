@@ -18,7 +18,8 @@ Last updated by Amnon Drory, Winter 2011.
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
-
+#include <crtdbg.h>
+int server_run = 1;
 int number_of_player=0 ;
 int game_on = 1;
 int win;
@@ -45,7 +46,24 @@ static void CleanupWorkerThreads();
 static DWORD ServiceThread(thread_service_arg *thread_argv);
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+static DWORD Exit_Thread(void) {
+	
+while (1) {
+	char from_board[256];
+	gets_s(from_board, sizeof(from_board));
 
+	if (STRINGS_ARE_EQUAL(from_board, "exit")) {
+		server_run = 0;
+CleanupWorkerThreads();
+	/*	TerminateThread(ThreadHandles[0], NULL);
+		TerminateThread(ThreadHandles[1], NULL);
+		TerminateThread(ThreadHandles[2], NULL);*/
+_CrtDumpMemoryLeaks();
+		exit( 0);
+	}
+}
+}
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 void MainServer(int port)
 {
 	thread_service_arg player_array[3];
@@ -55,7 +73,7 @@ void MainServer(int port)
 	SOCKADDR_IN service;
 
 	
-	int server_run = 1, ListenRes, bindRes, Ind, Loop = 0, index_player = 0;
+	int  ListenRes, bindRes, Ind, Loop = 0, index_player = 0;
 	// Initialize Winsock.
 	WSADATA wsaData;
 	int StartupRes = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -266,11 +284,11 @@ int send_failed(TransferResult_t SendRes, thread_service_arg* thread_argv) {
 
 
 
-int seven_boom(TransferResult_t RecvRes, thread_service_arg* thread_argv,int number,int Done, Message *message,char * file_name) {
+int seven_boom( thread_service_arg* thread_argv,int number,int Done, Message *message,char * file_name) {
 
 	char snum[50];
 	char* AcceptedStr = NULL;
-
+	TransferResult_t RecvRes;
 	RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
 	if (RecvRes == TRNS_FAILED)
 	{
@@ -486,7 +504,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
 						return ERROR_CODE;
 					}
-					state = seven_boom(RecvRes, thread_argv, number, Done, &message, file_name);
+					state = seven_boom( thread_argv, number, Done, &message, file_name);
 					
 				
 					if (thread_argv->player_index == 1) {
@@ -556,9 +574,16 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
+	CreateThread(
+		NULL,
+		0,
+		(LPTHREAD_START_ROUTINE)Exit_Thread,
+		NULL,
+		0,
+		NULL
+	);
 	MainServer(atoi(argv[1]));
 	return exitcode; // Returns 0 if returned sucsessfuly, 0x555 else
 }
-
 
 
