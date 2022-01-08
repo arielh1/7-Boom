@@ -275,7 +275,7 @@ int MainClient(char *ip,int port,char *argv[])
 			}
 			else
 			{
-				printf("this message from server is:%s", recv);
+		
 				if (strstr(recv, SERVER_MAIN_MENU)) {
 					decode_message("SERVER_MAIN_MENU", &message, "received");
 					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -326,10 +326,8 @@ int MainClient(char *ip,int port,char *argv[])
 		case 2: {
 			recv = NULL;
 			RecvRes = ReceiveString(&recv, m_socket);
-			if (timeout(30) == 1) {
-				printf("Time Out\n");
-			//	return 0;
-			}
+			
+			
 
 			if(check_failed_disconnected(RecvRes)==0)
 			{
@@ -360,7 +358,7 @@ int MainClient(char *ip,int port,char *argv[])
 				{
 					return 0x555;
 				}
-				printf("this message from server is:%s\n", recv);
+			
 				if (strstr(recv, SERVER_MOVE_REQUEST)) {
 					decode_message("SERVER_MOVE_REQUEST", &message, "received");
 					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -368,7 +366,7 @@ int MainClient(char *ip,int port,char *argv[])
 						return ERROR_CODE;
 					}
 						do{
-						printf("your turn\n");
+						printf("your turn !\n");
 						gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
 	
 						if ((strcmp(input_client, "boom") != 0) && is_digit(input_client) == 0) {
@@ -397,8 +395,20 @@ int MainClient(char *ip,int port,char *argv[])
 						}
 						//break;
 					}
+				if (strstr(recv, GAME_VIEW)) {
+
+					decode_message(recv, &message, "received");
+					printf("%s move was %s\n%s\n", message.param[0], message.param[1], message.param[2]);
+					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+						printf(WRITE_TO_FILE_ERROR_MESSAGE);
+						return ERROR_CODE;
+					}
+				}
+				
 				if (strstr(recv, GAME_ENDED)) {
-					decode_message("GAME_ENDED", &message, "received");
+
+					decode_message(recv, &message, "received");
+					printf("%s won!\n", message.param[0]);
 					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
 						return ERROR_CODE;
