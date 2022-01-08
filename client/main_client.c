@@ -125,12 +125,12 @@ int check_failed_disconnected(TransferResult_t RecvRes) {
 	if (RecvRes == TRNS_FAILED)
 	{
 		printf("Socket error while trying to write data to socket\n");
-		return ERROR_CODE;
+		exit( ERROR_CODE);
 	}
 	else if (RecvRes == TRNS_DISCONNECTED)
 	{
 		printf("Server closed connection. Bye!\n");
-		return ERROR_CODE;
+		exit(ERROR_CODE);
 	}
 	else
 		return 0;
@@ -148,7 +148,7 @@ int check_failed_disconnected(TransferResult_t RecvRes) {
 
 int MainClient(char *ip,int port,char *argv[])
 {
-	char SendStr[2560], * recv = NULL, * input_client = NULL;
+	char SendStr[2560], * recv = NULL,  input_client[500];
 //	int input_is_valid=0;
 	SOCKADDR_IN clientService;
 //	HANDLE hThread[2];
@@ -299,18 +299,19 @@ int MainClient(char *ip,int port,char *argv[])
 				recv = NULL;
 				RecvRes = ReceiveString(&recv, m_socket);
 
-				if (check_failed_disconnected(RecvRes) == 0)
+				if (check_failed_disconnected(RecvRes) != 0)
 				{
-					printf("this message from server is:%s\n", recv);
-
-					if (strstr(recv, SERVER_MOVE_REQUEST)) {
-
-						gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+					return 0x555;
+				}
+				printf("this message from server is:%s\n", recv);
+				if (strstr(recv, SERVER_MOVE_REQUEST)) {
+						printf("your turn\n", recv);
+						gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
 					
-						//sprintf(SendStr, "%s:%s", CLIENT_PLAYER_MOVE, SendStr);
-						SendRes = SendString(SendStr, m_socket);
+						sprintf(SendStr,"%s:%s\n", CLIENT_PLAYER_MOVE, input_client);
+						
 
-						if (SendRes == TRNS_FAILED)
+						if (SendString(SendStr, m_socket) == TRNS_FAILED)
 						{
 							printf("Socket error while trying to write data to socket\n");
 							return 0x555;
@@ -318,16 +319,16 @@ int MainClient(char *ip,int port,char *argv[])
 						
 						//break;
 					}
-					if (strstr(recv, GAME_ENDED)) {
+				if (strstr(recv, GAME_ENDED)) {
 
 						state = 1;
 
 						break;
 					}
-					free(recv);
+				
 				}
 
-			}
+			
 			break;
 		case 4:
 			sprintf(SendStr, "%s:%s", CLIENT_DISCONNECT, argv[3]);

@@ -61,7 +61,7 @@ int write_to_file(char* write_file_name, char* message) {
 }
 
 int write_to_log_file( char* log_file,char *input ) {
-	if (write_to_file(log_file, input, 0, strlen(input)) != SUCCESS_CODE) {
+	if (write_to_file(log_file, input) != SUCCESS_CODE) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
 		
 		return ERROR_CODE;
