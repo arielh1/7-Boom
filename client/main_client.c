@@ -454,15 +454,9 @@ int MainClient(char *ip,int port,char *argv[])
 			break;
 		}
 	}
-	//WaitForMultipleObjects(2, hThread, FALSE, INFINITE);
-
-	//TerminateThread(hThread[0], 0x555);
-	//TerminateThread(hThread[1], 0x555);
-
-	//CloseHandle(hThread[0]);
-	//CloseHandle(hThread[1]);
 
 	closesocket(m_socket);
+
 	DeleteFileA(file_name);
 	WSACleanup();
 
