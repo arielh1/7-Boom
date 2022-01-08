@@ -17,6 +17,7 @@ Last updated by Amnon Drory, Winter 2011.
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
+#include <time.h>
 
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
@@ -142,6 +143,16 @@ int is_digit(char* str) {
 		}
 	}
 	return 1;
+}
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
+int timeout(int seconds) {
+
+	clock_t endwait;
+	endwait = clock() + seconds * CLOCKS_PER_SEC;
+	while (clock() < endwait) {}
+
+	return  1;
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
@@ -315,6 +326,10 @@ int MainClient(char *ip,int port,char *argv[])
 		case 2: {
 			recv = NULL;
 			RecvRes = ReceiveString(&recv, m_socket);
+			if (timeout(30) == 1) {
+				printf("Time Out\n");
+			//	return 0;
+			}
 
 			if(check_failed_disconnected(RecvRes)==0)
 			{

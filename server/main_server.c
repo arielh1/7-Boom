@@ -19,6 +19,8 @@ Last updated by Amnon Drory, Winter 2011.
 #include <string.h>
 #include <winsock2.h>
 #include <crtdbg.h>
+#include <time.h>
+
 int server_run = 1;
 int number_of_player=0 ;
 int game_on = 1;
@@ -65,6 +67,17 @@ _CrtDumpMemoryLeaks();
 }
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
+int timeout(int seconds) {
+
+	clock_t endwait;
+	endwait = clock() + seconds * CLOCKS_PER_SEC;
+	while (clock() < endwait) {}
+
+	return  1;
+}
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+
 void MainServer(int port)
 {
 	thread_service_arg player_array[3];
