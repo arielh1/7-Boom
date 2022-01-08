@@ -69,22 +69,7 @@ _CrtDumpMemoryLeaks();
 }
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int terminate_all_threads() {
-	//DWORD dwExitCode;
-	for (int Ind = 0; Ind < NUM_OF_WORKER_THREADS; Ind++) {
-		if (ThreadHandles[Ind] != NULL) {
-			BOOL terminate_res = TerminateThread(ThreadHandles[Ind], 0x555);
-			if (terminate_res == NULL) {
-				printf("TerminateThread failed:  %ld .\n", WSAGetLastError());
-				return ERROR_CODE;
-			}
-			closesocket(ThreadInputs[Ind]);
-			CloseHandle(ThreadHandles[Ind]);
-			ThreadHandles[Ind] = NULL;
-		}
-	}
-	return SUCCESS_CODE;
-}
+
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
@@ -157,7 +142,7 @@ void MainServer(int port)
 	while (server_run) {CreateSemaphore(0, 0, 1, NULL);
 		
 			player_array[index_player].player_socket = accept(MainSocket, NULL, NULL);
-		
+			set_timeout(player_array[index_player].player_socket, 15000);
 			player_array[index_player].player_number = index_player;
 			if (player_array[index_player].player_socket == INVALID_SOCKET)
 			{

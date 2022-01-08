@@ -27,6 +27,18 @@ SOCKET m_socket;
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 //Reading data coming from the server
+int set_timeout(SOCKET sock, DWORD timeout) {
+	// set sock options
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return 1;
+	}
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return 1;
+	}
+	return 0;
+}
 static DWORD RecvDataThread(char *server_message)
 {
 	TransferResult_t RecvRes;
@@ -191,7 +203,7 @@ int MainClient(char *ip,int port,char *argv[])
 	clientService.sin_port = htons(port); //Setting the port to connect to.
 
 	
-
+	set_timeout(m_socket, 15000);
 	
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
