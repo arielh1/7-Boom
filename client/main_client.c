@@ -276,16 +276,14 @@ int state1(char* SendStr, char* argv[], char* file_name) {
 							printf(WRITE_TO_FILE_ERROR_MESSAGE);
 							return ERROR_CODE;
 						}
-			//			state = 2;
+		
 						free(recv);
-				//		break;
 						return 2;
 					}
 					if (STRINGS_ARE_EQUAL(SendStr, "2"))
 					{
-					//	state = 4;
+		
 						free(recv);
-					//	break;
 						return 4;
 					}
 					printf("Error: illegal command:\n");
@@ -476,10 +474,7 @@ int state5(SOCKADDR_IN clientService, char* ip, int port,char* SendStr, char* ar
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int state_machine(SOCKADDR_IN clientService, char* ip, int port, char* argv[], char* file_name) {
 	char SendStr[2560], * recv = NULL;
-
 	int state = 5;
-
-
 	int i = 1;
 
 	while (i) {
@@ -487,18 +482,15 @@ int state_machine(SOCKADDR_IN clientService, char* ip, int port, char* argv[], c
 		{
 		case 0:
 			state = state0(SendStr, argv, file_name);
-
 			break;
 		case 1:
 			state = state1(SendStr, argv, file_name);
-
 			break;
 		case 2:
 			state = state2(SendStr, argv, file_name);
 			break;
 		case 3:
 			state = state3(SendStr, argv, file_name);
-	
 			break;
 		case 4:
 			state = state4(SendStr, argv, file_name);
@@ -510,7 +502,6 @@ int state_machine(SOCKADDR_IN clientService, char* ip, int port, char* argv[], c
 	}
 	return 0;
 		
-	
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
