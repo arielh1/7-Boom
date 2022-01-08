@@ -132,8 +132,17 @@ int check_failed_disconnected(TransferResult_t RecvRes) {
 		return 0;
 
 }
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int is_digit(char* str) {
 
-
+	for (unsigned int index = 0; index < strlen(str); index++) {
+		if (!isdigit(str[index]))
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 int MainClient(char *ip,int port,char *argv[])
@@ -289,7 +298,13 @@ int MainClient(char *ip,int port,char *argv[])
 						free(recv);
 						break;
 					}
-					printf("this messase not good please type again\n");
+					printf("Error: illegal command:\n");
+					if (write_to_file(file_name, "Error: illegal command:\n") != SUCCESS_CODE) {
+						printf(WRITE_TO_FILE_ERROR_MESSAGE);
+						return ERROR_CODE;
+					}
+					printf("please type again\n");
+
 				} while (1);
 				
 					break;
@@ -337,8 +352,20 @@ int MainClient(char *ip,int port,char *argv[])
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
 						return ERROR_CODE;
 					}
-						printf("%s your turn\n", recv);
+						do{
+						printf("your turn\n");
 						gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
+	
+						if ((strcmp(input_client, "boom") != 0) && is_digit(input_client) == 0) {
+							printf("Error: illegal command:\n");
+							if (write_to_file(file_name,"Error: illegal command:\n") != SUCCESS_CODE) {
+								printf(WRITE_TO_FILE_ERROR_MESSAGE);
+								return ERROR_CODE;
+							}
+						}
+						else
+							break;
+						} while (1);
 					
 						sprintf(SendStr,"%s:%s\n", CLIENT_PLAYER_MOVE, input_client);
 						
