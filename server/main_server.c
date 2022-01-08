@@ -354,7 +354,7 @@ int game_view(thread_service_arg* thread_argv, char* file_name) {
 	Message message;
 	char message_to_client[100]; 
 		if (player_move[(thread_argv->player_index ) % 2]!=NULL){
-			(game_on) ? sprintf(message_to_client, "%s:%s;CONT\n", GAME_VIEW, player_move[(thread_argv->player_index ) % 2]) : sprintf(message_to_client, "%s:%s;CONT\n", GAME_VIEW, player_move[(thread_argv->player_index + 1) % 2]);
+			(game_on) ? sprintf(message_to_client, "%s:%s;%s;CONT\n", GAME_VIEW, name_player[(thread_argv->player_index) % 2], player_move[(thread_argv->player_index) % 2]) : sprintf(message_to_client, "%s:%s;%s;END\n", GAME_VIEW, name_player[(thread_argv->player_index) % 2], player_move[(thread_argv->player_index) % 2]);
 
 		if (SendString(message_to_client, thread_argv->player_socket) == TRNS_FAILED)
 		{
@@ -472,6 +472,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 				}
 				free(recv);
 				while (number_of_player == 2);
+				WaitForSingleObject(semaphore_write, INFINITE);
 				number_of_player++;
 
 				if (number_of_player == 1)
@@ -480,12 +481,13 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 
 					thread_argv->player_index = 2;
 				}
-				number = thread_argv->player_index;
-				while (number_of_player < 2);
 
+				number = thread_argv->player_index;
+				ReleaseSemaphore(semaphore_write, 1, NULL);
+				while (number_of_player < 2);
 				WaitForSingleObject(semaphore_write, INFINITE);
 				game_on = 1;
-			name_player[number - 1]= thread_argv->player_name;
+				name_player[number - 1]= thread_argv->player_name;
 				ReleaseSemaphore(semaphore_write,1,NULL);
 				state = 2;
 				break;
@@ -589,11 +591,11 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 			break;
 		case 4:
 			number_of_player--;
-			(thread_argv->player_index == win) ? sprintf(SendStr, "%s you won\n", GAME_ENDED) : sprintf(SendStr, "%s you lost\n", GAME_ENDED);
+			sprintf(SendStr, "%s:%s\n", GAME_ENDED,name_player[win-1]);
 			SendRes = SendString(SendStr, thread_argv->player_socket);
 			send_failed(SendRes, thread_argv);
-		 printf("game end \n");
-		 game_on = 0;
+			 printf("game end \n");
+			 game_on = 0;
 		
 		 state = 1;
 			break;
@@ -604,7 +606,7 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 	}
 
 
-	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
+
 	printf("Conversation ended.\n");
 	closesocket(thread_argv->player_socket);
 	return 0;

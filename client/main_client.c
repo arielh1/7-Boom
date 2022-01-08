@@ -231,7 +231,6 @@ int MainClient(char *ip,int port,char *argv[])
 		case 1:
 		{
 			recv = NULL;
-
 			RecvRes = ReceiveString(&recv, m_socket);
 			if (RecvRes == TRNS_FAILED)
 			{
@@ -246,7 +245,7 @@ int MainClient(char *ip,int port,char *argv[])
 			}
 			else
 			{
-				printf("this messae from server is:%s", recv);
+			
 				if (strstr(recv, SERVER_MAIN_MENU)) {
 					printf("%s",CLIENT_CHOOSE_P_Q);
 					gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
@@ -282,14 +281,17 @@ int MainClient(char *ip,int port,char *argv[])
 
 			if(check_failed_disconnected(RecvRes)==0)
 			{
-				printf("this message from server is:%s\n", recv);
+			
 
 				if (strstr(recv, GAME_STARTED)) {
-
+					printf("Game is on!\n");
 					state = 3;
 					free(recv);
 					break;
 				}
+			}
+			else {
+				state = 5;
 			}
 		}
 			break;
@@ -306,18 +308,9 @@ int MainClient(char *ip,int port,char *argv[])
 				}
 				if (strstr(recv, GAME_VIEW)) {
 					decode_message(recv, &message, "received");
-					printf("move was %s\n%s\n", message.param[0], message.param[1]);
-					
-					
-					/*if (SendString(SendStr, m_socket) == TRNS_FAILED)
-					{
-						printf("Socket error while trying to write data to socket\n");
-						return 0x555;
-					}*/
-
-					//break;
+					printf("%s move was %s\n%s\n", message.param[0], message.param[1], message.param[2]);
 				}
-				printf("this message from server is:%s\n", recv);
+			
 				if (strstr(recv, SERVER_MOVE_REQUEST)) {
 						printf("Your turn\n");
 						gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
@@ -328,12 +321,13 @@ int MainClient(char *ip,int port,char *argv[])
 							return 0x555;
 						}
 						
-						//break;
+					
 					}
 		
 				if (strstr(recv, GAME_ENDED)) {
-
-						state = 1;
+					decode_message(recv, &message, "received");
+					printf("%s won!", message.param[0]);
+					state = 1;
 
 						break;
 					}
