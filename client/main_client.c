@@ -473,7 +473,7 @@ int MainClient(char *ip,int port,char *argv[])
 
 			}
 			state = 0;
-			
+			printf("Connected to server on %s:%s\n",argv[1],argv[2]);
 			break;
 		}
 		default:
