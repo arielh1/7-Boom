@@ -62,9 +62,9 @@ int decode_message(char* input,  Message * message,char *send_or_recv)
 	char seps2[] = ";,\n";
 	int i;
 	free_message(message);
-	message->param[0] = NULL ;
-	message->param[1] = NULL;
-	message->param[2] = NULL;
+	message->param[0] = 0 ;
+	message->param[1] = 0;
+	message->param[2] = 0;
 	message->message_type = NULL;
 	message->message_type = strtok(input, seps1);
 	token = strtok(NULL, seps2);
