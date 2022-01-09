@@ -4,10 +4,11 @@
 
 
 #include "game.h"
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int is_seven_boom(int number) {
 	return (number % 7 == 0);
 }
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int game_start() {//TODO ERROR
 	//semaphore_clinet_connect = CreateSemaphore(0, 2,2, NULL);
 
@@ -16,10 +17,11 @@ int game_start() {//TODO ERROR
 	return 0;
 	
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int seven_appeared(char* snum) {
 
 
 	return (strstr(snum, "7") != NULL);
 
 }
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/

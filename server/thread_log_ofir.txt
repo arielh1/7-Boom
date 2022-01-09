@@ -2,7 +2,3 @@ received from server-CLIENT_REQUEST:ofir
 sent from server-SERVER_APPROVED
 sent from server-SERVER_MAIN_MENU
 received from server-CLIENT_VERSUS:ofir
-sent from server-GAME_STARTED
-sent from server-TURN_SWITCH:ariel
-sent from server-GAME_VIEW:ariel;1;CONT
-sent from server-SERVER_MOVE_REQUEST
