@@ -1,6 +1,6 @@
 #include "helper_function.h"
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include "../Shared/SocketExampleShared.h"
+
 #include "../Shared/SocketSendRecvTools.h"
 #include <stdlib.h>
 
@@ -49,24 +49,34 @@ int write_to_log_file( char* log_file,char *input ) {
 }
 void free_message(Message* message)
 {
+	free(message->message_type);
 	int i = 0;
 	for (i = 0; i < 3; i++) {
-		if (!message->param[0])
-			free(message->param[0]);
+		if (message->param[i] != NULL) {
+		free(message->param[i]);
+
+		}
+			
 	}
 }
 int decode_message(char* input,  Message * message,char *send_or_recv)
 {
-	char* token, * next_token=NULL;
+	char* token, * next_token=NULL,*type=NULL;
 	char seps1[] = ":,\n";
 	char seps2[] = ";,\n";
 	int i;
-	free_message(message);
-	message->param[0] = 0 ;
-	message->param[1] = 0;
-	message->param[2] = 0;
 	message->message_type = NULL;
-	message->message_type = strtok(input, seps1);
+	message->message_type = malloc(sizeof(char) * MAX_SIZE_OF_PARAM);
+	if (!message->message_type) {
+		printf(MEMORY_ALLOCATION_FALIURE_MEESAGE);
+		return ERROR_CODE;
+	}
+	message->param[0] = NULL ;
+	message->param[1] = NULL;
+	message->param[2] = NULL;
+
+	type = strtok(input, seps1);
+	strcpy(message->message_type,type);
 	token = strtok(NULL, seps2);
 	for ( i = 0; i < MAX_PARAM_NUM; i++) {
 		if (token == NULL)

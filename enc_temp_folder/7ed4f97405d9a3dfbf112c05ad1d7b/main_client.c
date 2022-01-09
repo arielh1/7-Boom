@@ -539,7 +539,8 @@ int main(int argc, char* argv[]) {
 	exitcode= MainClient( atoi(argv[2]), argv);
 	DeleteFileA(name_file);
 	_CrtDumpMemoryLeaks();
-
+	t=  malloc(sizeof(int));
+	_CrtDumpMemoryLeaks();
 ;
 	return exitcode;
 	

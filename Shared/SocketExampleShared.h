@@ -9,7 +9,7 @@
 
 #ifndef SOCKET_EXAMPLE_SHARED_H
 #define SOCKET_EXAMPLE_SHARED_H
-#include "../shared/helper_function.h"
+
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
@@ -78,7 +78,7 @@
 #define WRITE_TO_LOG_WRONG_MSG "Message error. Exiting.\n"
 #define SENT_TO_CLIENT "sent to client-"
 #define RECIEVED_FROM_CLIENT "recieved from client-"
-#define MAX_LINE 100
+#define MAX_LINE 150
 #define TXT_TYPE ".txt"
 #define OUTPUT_DIRECTORY "./Output"
 
@@ -108,5 +108,10 @@
 #define TIMEOUT_15_SEC 15
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+typedef struct Message {
+	char *message_type;
+	char *param[3];
+	char log_file_format[MAX_LINE];
+}Message;
 
 #endif // SOCKET_EXAMPLE_SHARED_H

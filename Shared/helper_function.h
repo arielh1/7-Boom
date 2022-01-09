@@ -1,10 +1,8 @@
 #ifndef HELPER_FUNCTION
 #define HELPER_FUNCTION
-typedef struct Message {
-	char* message_type;
-	char* param[3];
-	char log_file_format[100];
-}Message;
+
+#include "../Shared/SocketExampleShared.h"
+
 
 
 int write_to_file(char* write_file_name, char* message);
