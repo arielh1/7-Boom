@@ -27,6 +27,9 @@
     <ClCompile Include="..\Shared\helper_function.c">
       <Filter>shared</Filter>
     </ClCompile>
+    <ClCompile Include="state_machine_client.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Shared\SocketExampleShared.h">
@@ -40,6 +43,9 @@
     </ClInclude>
     <ClInclude Include="..\Shared\helper_function.h">
       <Filter>shared</Filter>
+    </ClInclude>
+    <ClInclude Include="state_machine_client.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

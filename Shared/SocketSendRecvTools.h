@@ -11,6 +11,11 @@
 #include <strsafe.h>
 #include <crtdbg.h>
 #include <winsock2.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <winsock2.h>
+#include <time.h>
 #pragma comment(lib, "ws2_32.lib")
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
