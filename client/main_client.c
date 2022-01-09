@@ -288,6 +288,7 @@ int state2(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 		if (strstr(recv, GAME_STARTED)) {
 			printf("Game is on!\n");
 			decode_message(recv, &message, "received");
+			free_message(&message);
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -300,10 +301,9 @@ int state2(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 	return ERROR_CODE;
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int state3(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
-
+int state3(char *argv[]) {
 	char* recv=NULL;
-	char  input_client[MAX_LINE];
+	char  input_client[MAX_LINE], SendStr[MAX_LINE];
 	TransferResult_t RecvRes;
 	Message message;
 	recv = NULL;
@@ -312,21 +312,24 @@ int state3(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 		recv = NULL;
 		RecvRes = ReceiveString(&recv, m_socket);
 		if (check_failed_disconnected(RecvRes) == ERROR_CODE){
+			free(recv);
 			return ERROR_CODE;
 		}
 		if (strstr(recv, SERVER_MOVE_REQUEST)) {
 			decode_message(recv, &message, "received");
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			free(recv);
+			free_message(&message);
+			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
 			do {
 				printf("Enter the next number or boom: !\n");
-				gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
+				gets_s(input_client, sizeof(input_client));
 
 				if ((strcmp(input_client, "boom") != 0) && is_digit(input_client) == 0) {
 					printf("Error: illegal command:\n");
-					if (write_to_file(file_name, "Error: illegal command:\n") != SUCCESS_CODE) {
+					if (write_to_file(name_file, "Error: illegal command:\n") != SUCCESS_CODE) {
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
 						return ERROR_CODE;
 					}
@@ -334,12 +337,8 @@ int state3(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 				else
 					break;
 			} while (1);
-
 			sprintf(SendStr, "%s:%s\n", CLIENT_PLAYER_MOVE, input_client);
-
-
-			if (SendString(SendStr, m_socket) == TRNS_FAILED)
-			{
+			if (SendString(SendStr, m_socket) == TRNS_FAILED){
 				if (write_to_file(name_file, "Server disconnected. Exiting.\n") != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
 					return ERROR_CODE;
@@ -348,45 +347,52 @@ int state3(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 				return ERROR_CODE;
 			}
 			decode_message(SendStr, &message, "sent");
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			free_message(&message);
+			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
 		
 		}
-		if (strstr(recv, GAME_VIEW)) {
-
+		 if (strstr(recv, GAME_VIEW)) {
 			decode_message(recv, &message, "received");
 			printf("%s move was %s\n%s\n", message.param[0], message.param[1], message.param[2]);
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			free_message(&message);
+			free(recv);
+			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
 		}
-		if (strstr(recv, TURN_SWITCH)) {
+		 if (strstr(recv, TURN_SWITCH)) {
 			decode_message(recv, &message, "received");
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			
+			free(recv);
+			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
 			(STRINGS_ARE_EQUAL(message.param[0], argv[3]) == TRUE) ? printf("your turn !\n") : printf("%s turn!\n", message.param[0]);
+			free_message(&message);
 		}
-		if (strstr(recv, GAME_ENDED)) {
+		 if (strstr(recv, GAME_ENDED)) {
 
 			decode_message(recv, &message, "received");
 			printf("%s won!\n", message.param[0]);
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			free_message(&message);
+			free(recv);
+			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
 			return 1;
-
-		//	break;
 		}
-		if (strstr(recv, SERVER_OPPONENT_QUIT)) {
+		 if (strstr(recv, SERVER_OPPONENT_QUIT)) {
 			printf("Opponent quit .\n");
 			decode_message(recv, &message, "received");
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			free(recv);
+			free_message(&message);
+			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
@@ -396,8 +402,8 @@ int state3(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 	return ERROR_CODE;
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int state4(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
-
+int state4() {
+	char SendStr[MAX_LINE];
 	TransferResult_t SendRes;
 	Message message;
 	sprintf(SendStr, "%s\n", CLIENT_DISCONNECT);
@@ -412,10 +418,12 @@ int state4(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 		return ERROR_CODE;
 	}
 	decode_message(SendStr, &message, "sent");
-	if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+	if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
 		return ERROR_CODE;
 	}
+	free_message(&message);
+	
 	return 0;
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
@@ -472,24 +480,28 @@ int state_machine(SOCKADDR_IN clientService, char* ip, int port, char* argv[], c
 		case 1:
 		
 			state = state1(SendStr, argv, file_name);
-		
+
 			break;
 		case 2:
+			_CrtDumpMemoryLeaks();
 			state = state2(SendStr, argv, file_name);
-			
+			_CrtDumpMemoryLeaks();
 			break;
 		case 3:
-			state = state3(SendStr, argv, file_name);
-			
+			state = state3(argv);
 			break;
 		case 4:
-			state = state4(SendStr, argv, file_name);
+	
+			state = state4( );
 			i = 0;
+			
 			break;
 		case 5:
+			
 			state = state5(clientService,  argv);
 			if (state == 0)
 				printf("Connected to server on %s:%s\n", argv[1], argv[2]);
+		
 			break;
 		case ERROR_CODE:
 			return ERROR_CODE;
@@ -524,23 +536,18 @@ int MainClient(int port,char *argv[])
 	clientService.sin_port = htons(port); //Setting the port to connect to.
 	set_timeout(m_socket, (DWORD)RESPOND_TIME);
 	code_exit = state_machine(clientService, argv[1], port, argv, file_name) == ERROR_CODE;
-
 	WSACleanup();
 	closesocket(m_socket);
 
 	return code_exit;
 }
 
-
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
-	int* t;
 	sprintf(name_file, "client_log_%s.txt", argv[3]);
 	exitcode= MainClient( atoi(argv[2]), argv);
 	DeleteFileA(name_file);
 	_CrtDumpMemoryLeaks();
-
-;
 	return exitcode;
 	
 }
