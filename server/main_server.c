@@ -10,7 +10,7 @@
 //SWITCH_TURN
 //OPPONENTS_NO_SERVE
 ///mem leak
-/// //client disconnect first
+
 /// 
  /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 #define WIN32_LEAN_AND_MEAN
@@ -120,7 +120,8 @@ void MainServer(int port){
 	
 	while (server_run) {
 			player_array[index_player].player_socket = accept(MainSocket, NULL, NULL);
-	set_timeout(player_array[index_player].player_socket, (DWORD)RESPOND_TIME);	
+			if(0!=set_timeout(player_array[index_player].player_socket, (DWORD)RESPOND_TIME))
+				goto server_cleanup_3;
 			player_array[index_player].player_number = index_player;
 			if (player_array[index_player].player_socket == INVALID_SOCKET)
 			{
@@ -155,6 +156,7 @@ server_cleanup_1:
 	if (WSACleanup() == SOCKET_ERROR)
 		printf("Failed to close Winsocket, error %ld. Ending program.\n", WSAGetLastError());
 }
+
 
 
 
@@ -416,15 +418,19 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 	TransferResult_t RecvRes;
 	char  *recv=NULL;
 	int state = 0;
+
 		RecvRes = ReceiveString(&recv, thread_argv->player_socket);
 		if (rec_failed_disconnected(RecvRes, thread_argv) != 0)
 		{
 			return ERROR_CODE;
 		}
+		
 		decode_message(recv, &message, "received");
 		if (strstr(message.message_type, CLIENT_REQUEST)) {
 			strcpy(thread_argv->player_name, message.param[0]);
 			sprintf(file_name, "thread_log_%s.txt", thread_argv->player_name);
+			strcpy(thread_argv->file_name, file_name);
+		
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -445,12 +451,13 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 				closesocket(thread_argv->player_socket);
 				return 5;
 			}
+			
 			decode_message("SERVER_APPROVED", &message, "sent");
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
-
+			free_message(&message);
 			SendRes = SendString(SERVER_APPROVED, thread_argv->player_socket);
 			if (SendRes == TRNS_FAILED)
 			{
@@ -458,10 +465,8 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 				closesocket(thread_argv->player_socket);
 				return ERROR_CODE;
 			}
-			
 			return 1;
 		}
-	
 		return 0;
 }
 
@@ -472,11 +477,13 @@ int server_state(thread_service_arg* thread_argv) {
 	TransferResult_t RecvRes;
 	Message message;
 	char* AcceptedStr = NULL;
+
 	while (1) {
 		switch (state){
 		case 0: 
 			if ((state = client_req_server_state(thread_argv, file_name)) == ERROR_CODE)
 				return ERROR_CODE;
+			_CrtDumpMemoryLeaks();
 			  break;
 		case 1:{
 			if (SendString(SERVER_MAIN_MENU, thread_argv->player_socket) == TRNS_FAILED){
@@ -526,9 +533,10 @@ int server_state(thread_service_arg* thread_argv) {
 				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
 					return ERROR_CODE;
+				
 				}
 				
-				return 0;
+				return 1;
 			}
 		}
 		break;
@@ -562,6 +570,8 @@ int server_state(thread_service_arg* thread_argv) {
 			break;
 		}
 	}
+	free(file_name);
+	_CrtDumpMemoryLeaks();
 	return 0;
 }
 
@@ -579,10 +589,10 @@ error_code = server_state(thread_argv);
 if ((error_code == ERROR_CODE))
 return ERROR_CODE;
 	}
-		
-	DeleteFileA(file_name);
-	printf("Conversation ended.\n");
+	
+	DeleteFileA(thread_argv->file_name);
 	closesocket(thread_argv->player_socket);
+	_CrtDumpMemoryLeaks();
 	return 0;
 }
 

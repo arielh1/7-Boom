@@ -47,15 +47,24 @@ int write_to_log_file( char* log_file,char *input ) {
 
 	return SUCCESS_CODE;
 }
-
+void free_message(Message* message)
+{
+	int i = 0;
+	for (i = 0; i < 3; i++) {
+		if (!message->param[0])
+			free(message->param[0]);
+	}
+}
 int decode_message(char* input,  Message * message,char *send_or_recv)
 {
 	char* token, * next_token=NULL;
 	char seps1[] = ":,\n";
 	char seps2[] = ";,\n";
 	int i;
-	
-
+	free_message(message);
+	message->param[0] = NULL ;
+	message->param[1] = NULL;
+	message->param[2] = NULL;
 	message->message_type = NULL;
 	message->message_type = strtok(input, seps1);
 	token = strtok(NULL, seps2);

@@ -12,6 +12,7 @@ typedef struct thread_service_arg {
 	int player_index;
 	int player_number;
 	SOCKET player_socket;
+	char file_name[MAX_LEN_NAME];
 }thread_service_arg;
 
 /// <summary>
