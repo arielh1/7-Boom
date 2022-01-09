@@ -79,15 +79,7 @@ int is_digit(char* str) {
 	}
 	return 1;
 }
-/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int timeout(int seconds) {
 
-	clock_t endwait;
-	endwait = clock() + seconds * CLOCKS_PER_SEC;
-	while (clock() < endwait) {}
-
-	return  1;
-}
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int MainClient(int port,char *argv[])
 {

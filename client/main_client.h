@@ -35,10 +35,10 @@ int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[], Message 
 /// <returns></returns>
 int check_failed_disconnected(TransferResult_t RecvRes);
 /// <summary>
-/// 
+/// checks if the user inserted to the program apositive integer
 /// </summary>
-/// <param name="str"></param>
-/// <returns></returns>
+/// <param name="str">recieve string from user</param>
+/// <returns>return 1 if input is valid 0 else</returns>
 int is_digit(char* str);
 /// <summary>
 /// 
@@ -47,10 +47,10 @@ int is_digit(char* str);
 /// <returns></returns>
 int timeout(int seconds);
 /// <summary>
-/// 
+/// main function to manage the client
 /// </summary>
 /// <param name="port"></param>
-/// <param name="argv"></param>
+/// <param name="argv">arguments</param>
 /// <returns></returns>
 int MainClient(int port, char* argv[]);
 /// <summary>
