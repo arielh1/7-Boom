@@ -1,4 +1,5 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "../Shared/SocketExampleShared.h"
 #include "../Shared/SocketSendRecvTools.h"
 #include "../server/main_server.h"
@@ -16,12 +17,13 @@
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <Windows.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
 #include <crtdbg.h>
-#include <time.h>
+
 
 int server_run = 1;
 int number_of_player=0 ;
@@ -63,10 +65,10 @@ while (1) {
 	if (STRINGS_ARE_EQUAL(from_board, "exit")) {
 		server_run = 0;
 
-	TerminateThread(ThreadHandles[0], NULL);
-		TerminateThread(ThreadHandles[1], NULL);
-		TerminateThread(ThreadHandles[2], NULL);
-		CleanupWorkerThreads();
+	TerminateThread(ThreadHandles[0], 0);
+		TerminateThread(ThreadHandles[1], 0);
+		TerminateThread(ThreadHandles[2], 0);
+	//	CleanupWorkerThreads();
 _CrtDumpMemoryLeaks();
 		exit( 0);
 	}
@@ -558,12 +560,13 @@ int server_state(thread_service_arg* thread_argv) {
 				return ERROR_CODE;
 			  break;
 		case 1:{
-			if (SendString(SERVER_MAIN_MENU, thread_argv->player_socket) == TRNS_FAILED){
+			strcpy(SendStr , "SERVER_MAIN_MENU\n");
+			if (SendString(SendStr, thread_argv->player_socket) == TRNS_FAILED){
 				printf("Service socket error while writing, closing thread.\n");
 				closesocket(thread_argv->player_socket);
 				return ERROR_CODE;
 			}
-			decode_message("SERVER_MAIN_MENU", &message, "sent");
+			decode_message(SendStr, &message, "sent");
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -593,7 +596,28 @@ int server_state(thread_service_arg* thread_argv) {
 				}
 				number = thread_argv->player_index;
 				ReleaseSemaphore(semaphore_write, 1, NULL);
-				while (number_of_player < 2);
+			
+				if (number_of_player < 2) {
+					
+					Sleep(5000);
+					if (number_of_player < 2) {
+						number_of_player--;
+						strcpy(SendStr, "SERVER_NO_OPPONENTS\n");
+						if (SendString(SendStr, thread_argv->player_socket) == TRNS_FAILED) {
+							printf("Service socket error while writing, closing thread.\n");
+							closesocket(thread_argv->player_socket);
+							return ERROR_CODE;
+						}
+						decode_message(SendStr, &message, "sent");
+						if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+							printf(WRITE_TO_FILE_ERROR_MESSAGE);
+							return ERROR_CODE;
+						}
+
+
+						break;
+					}
+				}
 				WaitForSingleObject(semaphore_write, INFINITE);
 				game_on = 1;
 				name_player[number - 1] = thread_argv->player_name;

@@ -140,11 +140,10 @@ int state0( char* argv[], char file_name[MAX_LINE]) {
 			}
 			return ERROR_CODE;
 		}
-
-		_CrtDumpMemoryLeaks();
+		
 		decode_message(SendStr, &message, "sent");
 		free_message(&message);
-		_CrtDumpMemoryLeaks();
+	
 		if (strstr(message.message_type, CLIENT_REQUEST)) {
 			sprintf(file_name, "client_log_%s.txt", argv[3]);
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -159,7 +158,7 @@ int state0( char* argv[], char file_name[MAX_LINE]) {
 			free(recv);
 			return ERROR_CODE;
 		}
-		_CrtDumpMemoryLeaks();
+	
 
 		if (strstr(recv, SERVER_APPROVED)) {
 			decode_message(recv, &message, "received");
@@ -174,7 +173,7 @@ int state0( char* argv[], char file_name[MAX_LINE]) {
 			return 1;
 			
 		}
-		_CrtDumpMemoryLeaks();
+	
 		if (strstr(recv, SERVER_DENIED)) {
 			decode_message(recv, &message, "received");
 			printf("Server on %s:%s  denied the connection request.\n", argv[1], argv[2]);
@@ -189,7 +188,7 @@ int state0( char* argv[], char file_name[MAX_LINE]) {
 			return 5;
 		
 		}
-		_CrtDumpMemoryLeaks();
+	
 	return ERROR_CODE;
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
@@ -259,6 +258,7 @@ int state1(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 					}
 				} while (1);
 			}
+			
 	}
 	return ERROR_CODE;
 }
@@ -272,6 +272,20 @@ int state2(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 	RecvRes = ReceiveString(&recv, m_socket);
 	if (check_failed_disconnected(RecvRes) == 0)
 	{
+		if (strstr(recv, SERVER_NO_OPPONENTS)) {
+			//Sleep(RESPOND_TIME);
+			decode_message(recv, &message, "received");
+			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+				printf(WRITE_TO_FILE_ERROR_MESSAGE);
+				free_message(&message);
+				free(recv);
+				return ERROR_CODE;
+			}
+			free_message(&message);
+			free(recv);
+			return 1;
+
+		}
 		if (strstr(recv, GAME_STARTED)) {
 			printf("Game is on!\n");
 			decode_message(recv, &message, "received");
@@ -453,22 +467,22 @@ int state_machine(SOCKADDR_IN clientService, char* ip, int port, char* argv[], c
 		switch (state)
 		{
 		case 0:
-			_CrtDumpMemoryLeaks();
+			
 			state = state0( argv, file_name);
-			_CrtDumpMemoryLeaks();
+			
 			break;
 		case 1:
-			_CrtDumpMemoryLeaks();
+		
 			state = state1(SendStr, argv, file_name);
-			_CrtDumpMemoryLeaks();
+		
 			break;
 		case 2:
 			state = state2(SendStr, argv, file_name);
-			_CrtDumpMemoryLeaks();
+			
 			break;
 		case 3:
 			state = state3(SendStr, argv, file_name);
-			_CrtDumpMemoryLeaks();
+			
 			break;
 		case 4:
 			state = state4(SendStr, argv, file_name);
