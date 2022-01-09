@@ -1,8 +1,11 @@
 #ifndef GAME_H
 #define GAME_H
+#include "../Shared/SocketExampleShared.h"
+#include "../Shared/SocketSendRecvTools.h"
 HANDLE semaphore_clinet_connect;
 HANDLE semaphore_client_1_turn;
 HANDLE semaphore_client_2_turn;
+
 /// <summary>
 /// 
 /// </summary>
@@ -20,4 +23,5 @@ int is_seven_boom(int number);
 /// <param name="snum">input from client</param>
 /// <returns></returns>
 int seven_appeared(char* snum);
+
 #endif

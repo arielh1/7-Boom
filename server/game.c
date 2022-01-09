@@ -1,6 +1,5 @@
 
-#include "../Shared/SocketExampleShared.h"
-#include "../Shared/SocketSendRecvTools.h"
+
 
 
 #include "game.h"

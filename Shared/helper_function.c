@@ -2,7 +2,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include "../Shared/SocketSendRecvTools.h"
-#include <stdlib.h>
+
 
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/

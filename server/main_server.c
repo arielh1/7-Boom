@@ -1,9 +1,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-#include "../Shared/SocketExampleShared.h"
-#include "../Shared/SocketSendRecvTools.h"
 #include "../server/main_server.h"
-#include "game.h"
+
+
+
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
  ///to do list
  /// 
@@ -65,7 +64,7 @@ while (1) {
 	TerminateThread(ThreadHandles[0], 0);
 		TerminateThread(ThreadHandles[1], 0);
 		TerminateThread(ThreadHandles[2], 0);
-
+		_CrtDumpMemoryLeaks();
 
 		exit( 0);
 	}
@@ -500,6 +499,8 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 		}
 		if (strstr(recv, CLIENT_VERSUS)) {
 			decode_message(recv, &message, "received");
+			free_message(&message);
+			free(recv);
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -532,6 +533,7 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 						return ERROR_CODE;
 					}
 					decode_message(SendStr, &message, "sent");
+					free_message(&message);
 					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
 						return ERROR_CODE;
@@ -549,6 +551,8 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 		if (strstr(recv, CLIENT_DISCONNECT)) {
 			closesocket(thread_argv->player_socket);
 			decode_message(recv, &message, "received");
+			free_message(&message);
+			free(recv);
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -563,12 +567,9 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
 	char  *recv=NULL;
-
 	int state = 0;
-
 		RecvRes = ReceiveString(&recv, thread_argv->player_socket);
-		if (rec_failed_disconnected(RecvRes, thread_argv) != 0)
-		{
+		if (rec_failed_disconnected(RecvRes, thread_argv) != 0){
 			return ERROR_CODE;
 		}
 		
@@ -577,7 +578,6 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 			strcpy(thread_argv->player_name, message.param[0]);
 			sprintf(file_name, "thread_log_%s.txt", thread_argv->player_name);
 			strcpy(thread_argv->file_name, file_name);
-		
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -699,6 +699,7 @@ int main(int argc, char* argv[]) {
 		NULL
 	);
 	MainServer(atoi(argv[1]));
+	_CrtDumpMemoryLeaks();
 	return exitcode; // Returns 0 if returned sucsessfuly, 0x555 else
 }
 

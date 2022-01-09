@@ -1,7 +1,9 @@
 
 #ifndef MAIN_SERVER_H
 #define MAIN_SERVER_H
-
+#include "../Shared/SocketExampleShared.h"
+#include "../Shared/SocketSendRecvTools.h"
+#include "../shared/helper_function.h"
 typedef struct thread_service_arg {
 	char player_name[MAX_LEN_NAME];
 	int player_index;
@@ -9,6 +11,8 @@ typedef struct thread_service_arg {
 	SOCKET player_socket;
 	char file_name[MAX_LEN_NAME];
 }thread_service_arg;
+
+#include "game.h"
 
 void MainServer(int port);
 /// <summary>

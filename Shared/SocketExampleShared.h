@@ -13,7 +13,8 @@
 
 #define STRINGS_ARE_EQUAL( Str1, Str2 ) ( strcmp( (Str1), (Str2) ) == 0 )
 
-
+#define FROM_SERVER "%s from server-"
+#define FREOM_CLIENT "%s from client-"
 
 #define ERROR_CHAR "-1"
 #define SENT_TO_SERVER "sent to server-"
