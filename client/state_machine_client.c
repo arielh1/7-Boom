@@ -19,7 +19,7 @@ int state0(char* argv[]) {
 		}
 		return ERROR_CODE;
 	}
-	decode_message(SendStr, &message, "sent");
+	decode_message(SendStr, &message, SENT_TO_SERVER);
 	free_message(&message);
 	if (strstr(message.message_type, CLIENT_REQUEST)) {
 		sprintf(name_file, "client_log_%s.txt", argv[3]);
@@ -36,7 +36,7 @@ int state0(char* argv[]) {
 		return ERROR_CODE;
 	}
 	if (strstr(recv, SERVER_APPROVED)) {
-		decode_message(recv, &message, "received");
+		decode_message(recv, &message, RECIVED_FROM_SERVER);
 		free(recv);
 		free_message(&message);
 		if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
@@ -75,7 +75,7 @@ int state1(char* argv[]) {
 	if (check_failed_disconnected(RecvRes) == ERROR_CODE)
 		return ERROR_CODE;
 	if (strstr(recv, SERVER_MAIN_MENU)) {
-		decode_message(recv, &message, "received");
+		decode_message(recv, &message, RECIVED_FROM_SERVER);
 		if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 			printf(WRITE_TO_FILE_ERROR_MESSAGE);
 			free_message(&message);
@@ -86,7 +86,7 @@ int state1(char* argv[]) {
 		free(recv);
 		printf("%s", CLIENT_CHOOSE_P_Q);
 		do {
-			gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+			gets_s(SendStr, sizeof(SendStr)); 
 			if (STRINGS_ARE_EQUAL(SendStr, "1")) {
 				sprintf(SendStr, "%s:%s", CLIENT_VERSUS, argv[3]);
 				SendRes = SendString(SendStr, m_socket);
@@ -98,7 +98,7 @@ int state1(char* argv[]) {
 					printf("Server disconnected. Exiting.\n");
 					return ERROR_CODE;
 				}
-				decode_message(SendStr, &message, "sent");
+				decode_message(SendStr, &message, SENT_TO_SERVER);
 				free_message(&message);
 				if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);

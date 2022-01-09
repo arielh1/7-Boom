@@ -285,6 +285,7 @@ int seven_boom( thread_service_arg* thread_argv,int number, Message *message,cha
 	free(AcceptedStr);
 	return state;
 }
+
 int game_view(thread_service_arg* thread_argv, char* file_name) {
 	Message message;
 	char message_to_client[100]; 
@@ -306,6 +307,7 @@ int game_view(thread_service_arg* thread_argv, char* file_name) {
 	}
 	return 0;
 }
+
 int server_opponent_quit(thread_service_arg* thread_argv) {
 	Message  message;
 	char SendStr[SEND_STR_SIZE];
@@ -395,6 +397,7 @@ int game_run_one_turn(thread_service_arg* thread_argv,char file_name[SEND_STR_SI
 	
 	return state;
 }
+
 int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE],int *number) {
 	Message  message;
 	char SendStr[SEND_STR_SIZE];
@@ -472,6 +475,7 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 	}
 	return state;
 }
+
 int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZE],int *number) {
 	int state = 1;
 	char SendStr[SEND_STR_SIZE],*recv=NULL;
@@ -553,6 +557,7 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 		}
 	return state;
 }
+
 int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 	Message  message;
 	TransferResult_t SendRes;
@@ -670,16 +675,12 @@ static DWORD ServiceThread(thread_service_arg* thread_argv)
 	char  * recv = NULL, * input_file_str = NULL, file_name[1000] = { 0 };
 	int  state = 0, number=0,error_code=0;
 	BOOL Done = FALSE;
-
-
-
 	char* AcceptedStr = NULL;
 	while ((error_code == 0) ) {
 error_code = server_state(thread_argv);
 if ((error_code == ERROR_CODE))
 return ERROR_CODE;
 	}
-	
 	DeleteFileA(thread_argv->file_name);
 	closesocket(thread_argv->player_socket);
 //	_CrtDumpMemoryLeaks();

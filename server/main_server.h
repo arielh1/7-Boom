@@ -2,11 +2,6 @@
 #ifndef MAIN_SERVER_H
 #define MAIN_SERVER_H
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="port"></param>
-void MainServer(int port);
 typedef struct thread_service_arg {
 	char player_name[MAX_LEN_NAME];
 	int player_index;
@@ -15,6 +10,7 @@ typedef struct thread_service_arg {
 	char file_name[MAX_LEN_NAME];
 }thread_service_arg;
 
+void MainServer(int port);
 /// <summary>
 /// 
 /// </summary>

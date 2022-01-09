@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int write_to_file(char* write_file_name, char* message) {
 	HANDLE hFile = NULL;
 	DWORD dwBytesWritten=0 ;
@@ -37,7 +37,7 @@ int write_to_file(char* write_file_name, char* message) {
 	CloseHandle(hFile);
 	return SUCCESS_CODE;
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int write_to_log_file( char* log_file,char *input ) {
 	if (write_to_file(log_file, input) != SUCCESS_CODE) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -47,6 +47,7 @@ int write_to_log_file( char* log_file,char *input ) {
 
 	return SUCCESS_CODE;
 }
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 void free_message(Message* message)
 {
 	free(message->message_type);
@@ -59,6 +60,7 @@ void free_message(Message* message)
 			
 	}
 }
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int decode_message(char* input,  Message * message,char *send_or_recv)
 {
 	char* token, * next_token=NULL,*type=NULL;
@@ -112,3 +114,4 @@ int decode_message(char* input,  Message * message,char *send_or_recv)
 	
 	return SUCCESS_CODE;
 }
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
