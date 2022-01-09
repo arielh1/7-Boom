@@ -6,6 +6,14 @@ HANDLE semaphore_clinet_connect;
 HANDLE semaphore_client_1_turn;
 HANDLE semaphore_client_2_turn;
 
+typedef struct thread_service_arg {
+	char player_name[MAX_LEN_NAME];
+	int player_index;
+	int player_number;
+	SOCKET player_socket;
+	char file_name[MAX_LEN_NAME];
+}thread_service_arg;
+
 /// <summary>
 /// 
 /// </summary>
@@ -23,5 +31,7 @@ int is_seven_boom(int number);
 /// <param name="snum">input from client</param>
 /// <returns></returns>
 int seven_appeared(char* snum);
+
+int set_timeout(SOCKET sock, DWORD timeout);
 
 #endif

@@ -1,18 +1,7 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#pragma warning(disable: 4013)
+#pragma warning(disable: 6258)
 #include "../server/main_server.h"
-
-
-
-/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
- ///to do list
- /// 
-//
-//
-//OPPONENTS_NO_SERVE
-///mem leak
-/// time out in samporeim
-/// 
- /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -30,8 +19,6 @@ int game_on = 1;
 int win;
 char name_player[2][MAX_LEN_NAME] = {"",""};
 char player_move[2][MAX_LEN_NAME] = { 0,0 };
-int samp1;
-int samp2;
 int player_played;
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
@@ -46,11 +33,7 @@ SOCKET ThreadInputs[NUM_OF_WORKER_THREADS];
 
 HANDLE semaphore_wait;
 
-static int FindFirstUnusedThreadSlot();
 
-static void CleanupWorkerThreads();
-
-static DWORD ServiceThread(thread_service_arg *thread_argv);
 
 static DWORD Exit_Thread(void) {
 	
@@ -226,18 +209,6 @@ int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread
 
 }
 
-int set_timeout(SOCKET sock, DWORD timeout) {
-
-	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
-		printf("failed to set sockopt\n");
-		return 1;
-	}
-	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
-		printf("failed to set sockopt\n");
-		return 1;
-	}
-	return 0;
-}
 
 int seven_boom( thread_service_arg* thread_argv,int number, Message *message) {
 	char snum[50];
@@ -325,8 +296,6 @@ int server_opponent_quit(thread_service_arg* thread_argv) {
 	}
 	if (thread_argv->player_index == 2) {
 		ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
-		samp1++;
-		
 	}
 	return 5;
 }
@@ -425,11 +394,11 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 		}
 		if (thread_argv->player_index == 1) {
 			WaitForSingleObject(semaphore_client_1_turn, INFINITE);
-			samp1--;
+			
 		}
 		if (thread_argv->player_index == 2) {
 			WaitForSingleObject(semaphore_client_2_turn, INFINITE);
-			samp2--;
+		
 		}
 		if (game_on == 1) {
 			state = game_run_one_turn(thread_argv, thread_argv->file_name, number);

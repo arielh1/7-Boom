@@ -24,3 +24,15 @@ int seven_appeared(char* snum) {
 
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int set_timeout(SOCKET sock, DWORD timeout) {
+
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return 1;
+	}
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return 1;
+	}
+	return 0;
+}
