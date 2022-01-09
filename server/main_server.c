@@ -43,11 +43,11 @@ int player_played;
 
 #define SEND_STR_SIZE 350
 
-HANDLE semaphore_write;
+HANDLE semaphore_write ;
 HANDLE ThreadHandles[NUM_OF_WORKER_THREADS];
 SOCKET ThreadInputs[NUM_OF_WORKER_THREADS];
 
-
+HANDLE semaphore_wait;
 
 static int FindFirstUnusedThreadSlot();
 
@@ -355,7 +355,7 @@ int server_opponent_quit(thread_service_arg* thread_argv) {
 	Message  message;
 	char SendStr[SEND_STR_SIZE];
 	game_on = 0;
-	
+	number_of_player--;
 	sprintf(SendStr,"%s", SERVER_OPPONENT_QUIT);
 	decode_message(SendStr, &message, "sent");
 	if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE)
@@ -586,6 +586,7 @@ int server_state(thread_service_arg* thread_argv) {
 				while (number_of_player == 2);
 				WaitForSingleObject(semaphore_write, INFINITE);
 				number_of_player++;
+
 				if (number_of_player == 1) {
 					player_played = 0;
 					thread_argv->player_index = 1;
@@ -593,15 +594,19 @@ int server_state(thread_service_arg* thread_argv) {
 				if (number_of_player == 2) {
 
 					thread_argv->player_index = 2;
+					ReleaseSemaphore(semaphore_wait, 1, NULL);
 				}
 				number = thread_argv->player_index;
+				name_player[number - 1] = thread_argv->player_name;
 				ReleaseSemaphore(semaphore_write, 1, NULL);
 			
 				if (number_of_player < 2) {
 					
-					Sleep(5000);
+					WaitForSingleObject(semaphore_wait, RESPOND_TIME*2);
 					if (number_of_player < 2) {
+						WaitForSingleObject(semaphore_write, INFINITE);
 						number_of_player--;
+						ReleaseSemaphore(semaphore_write, 1, NULL);
 						strcpy(SendStr, "SERVER_NO_OPPONENTS\n");
 						if (SendString(SendStr, thread_argv->player_socket) == TRNS_FAILED) {
 							printf("Service socket error while writing, closing thread.\n");
@@ -620,7 +625,7 @@ int server_state(thread_service_arg* thread_argv) {
 				}
 				WaitForSingleObject(semaphore_write, INFINITE);
 				game_on = 1;
-				name_player[number - 1] = thread_argv->player_name;
+			
 				ReleaseSemaphore(semaphore_write, 1, NULL);
 				state = 2;
 				break;
@@ -696,7 +701,7 @@ return ERROR_CODE;
 
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
-	
+	semaphore_wait = CreateSemaphore(0, 0, 1, NULL);
 	CreateThread(
 		NULL,
 		0,

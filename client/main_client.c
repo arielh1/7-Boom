@@ -273,7 +273,6 @@ int state2(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 	if (check_failed_disconnected(RecvRes) == 0)
 	{
 		if (strstr(recv, SERVER_NO_OPPONENTS)) {
-			//Sleep(RESPOND_TIME);
 			decode_message(recv, &message, "received");
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -293,10 +292,7 @@ int state2(char SendStr[MAX_LINE], char* argv[], char file_name[MAX_LINE]) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
-
-	
 			free(recv);
-
 			return 3;
 		}
 	}
@@ -526,7 +522,7 @@ int MainClient(char *ip,int port,char *argv[])
 	clientService.sin_port = htons(port); //Setting the port to connect to.
 	set_timeout(m_socket, (DWORD)RESPOND_TIME);
 	code_exit = state_machine(clientService, ip, port, argv, file_name) == ERROR_CODE;
-	DeleteFileA(file_name);
+
 	WSACleanup();
 	closesocket(m_socket);
 	_CrtDumpMemoryLeaks();
@@ -537,7 +533,9 @@ int MainClient(char *ip,int port,char *argv[])
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
 	sprintf(name_file, "client_log_%s.txt", argv[3]);
-	return MainClient(argv[1], atoi(argv[2]), argv);
+	exitcode= MainClient(argv[1], atoi(argv[2]), argv);
+	DeleteFileA(name_file);
+	return exitcode;
 	
 }
 
