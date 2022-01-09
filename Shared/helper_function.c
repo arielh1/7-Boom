@@ -4,29 +4,6 @@
 #include "../Shared/SocketSendRecvTools.h"
 #include <stdlib.h>
 
-int wait_for_mutex(HANDLE mutex_handle) {
-	//Wait for the mutex to become available, then take ownership
-	DWORD wait_code;
-	wait_code = WaitForSingleObject(mutex_handle, INFINITE);
-	if (WAIT_OBJECT_0 != wait_code)
-	{
-		printf("Error when waiting for mutex\n");
-		return ERROR_CODE;
-	}
-	return SUCCESS_CODE;
-}
-
-
-int release_mutex(HANDLE mutex_handle) {
-	BOOL ret_val;
-	ret_val = ReleaseMutex(mutex_handle);
-	if (FALSE == ret_val)
-	{
-		printf("Error when releasing\n");
-		return ERROR_CODE;
-	}
-	return SUCCESS_CODE;
-}
 
 
 int write_to_file(char* write_file_name, char* message) {
