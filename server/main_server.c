@@ -255,7 +255,6 @@ int seven_boom( thread_service_arg* thread_argv,int number, Message *message) {
 		closesocket(thread_argv->player_socket);
 		return ERROR_CODE;
 	}
-	printf("Got move : %s from %s \n", AcceptedStr, thread_argv->player_name);
 	decode_message(AcceptedStr, message, "revice");
 	strcpy(player_move[thread_argv->player_index - 1] , message->param[0]);
 	if (write_to_file(thread_argv->file_name, message->log_file_format) != SUCCESS_CODE) {
@@ -320,7 +319,7 @@ int server_opponent_quit(thread_service_arg* thread_argv) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
 		return ERROR_CODE;
 	}
-	
+	free_message(&message);
 	if (thread_argv->player_index == 1) {
 		ReleaseSemaphore(semaphore_client_2_turn, 1, NULL);
 	}
@@ -381,6 +380,8 @@ int game_run_one_turn(thread_service_arg* thread_argv,char file_name[SEND_STR_SI
 				closesocket(thread_argv->player_socket);
 				return server_opponent_quit(thread_argv);
 			}
+			free_message(&message);
+			
 			decode_message(SendStr, &message, "sent");
 			free_message(&message);
 			
@@ -488,7 +489,6 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZE],int *number) {
 	int state = 1;
 	char SendStr[SEND_STR_SIZE],*recv=NULL;
-
 	TransferResult_t RecvRes;
 	Message  message;
 		strcpy(SendStr, "SERVER_MAIN_MENU\n");
