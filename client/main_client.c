@@ -345,12 +345,9 @@ int state3(char* SendStr, char* argv[], char* file_name) {
 	{
 		recv = NULL;
 		RecvRes = ReceiveString(&recv, m_socket);
-
-		if (check_failed_disconnected(RecvRes) != 0)
-		{
-			return 0x555;
+		if (check_failed_disconnected(RecvRes) != 0){
+			return ERROR_CODE;
 		}
-
 		if (strstr(recv, SERVER_MOVE_REQUEST)) {
 			decode_message("SERVER_MOVE_REQUEST", &message, "received");
 			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -358,7 +355,7 @@ int state3(char* SendStr, char* argv[], char* file_name) {
 				return ERROR_CODE;
 			}
 			do {
-				printf("your turn !\n");
+				/*printf("your turn !\n");*/
 				gets_s(input_client, sizeof(input_client)); //Reading a string from the keyboard
 
 				if ((strcmp(input_client, "boom") != 0) && is_digit(input_client) == 0) {
@@ -396,7 +393,14 @@ int state3(char* SendStr, char* argv[], char* file_name) {
 				return ERROR_CODE;
 			}
 		}
-
+		if (strstr(recv, TURN_SWITCH)) {
+			decode_message(recv, &message, "received");
+			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+				printf(WRITE_TO_FILE_ERROR_MESSAGE);
+				return ERROR_CODE;
+			}
+			(STRINGS_ARE_EQUAL(message.param[0], argv[3]) == TRUE) ? printf("your turn !\n") : printf("%s turn!\n", message.param[0]);
+		}
 		if (strstr(recv, GAME_ENDED)) {
 
 			decode_message(recv, &message, "received");

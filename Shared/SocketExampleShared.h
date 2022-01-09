@@ -32,7 +32,7 @@
 #define CLIENT_PLAYER_MOVE "CLIENT_PLAYER_MOVE"
 #define CLIENT_DISCONNECT "CLIENT_DISCONNECT"
 #define CLIENT_ILLEGAL_COMMAND "Error: Illegal command\n"
-
+#define TURN_SWITCH "TURN_SWITCH"
 
 #define STRINGS_ARE_EQUAL( Str1, Str2 ) ( strcmp( (Str1), (Str2) ) == 0 )
 #define ERROR_CODE ((int)(-1))

@@ -10,7 +10,7 @@
 //SWITCH_TURN
 //OPPONENTS_NO_SERVE
 ///mem leak
-
+/// time out in samporeim
 /// 
  /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 #define WIN32_LEAN_AND_MEAN
@@ -31,6 +31,7 @@ char *name_player[2];
 char* player_move[2] = {NULL};
 int samp1;
 int samp2;
+int player_played;
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
@@ -354,6 +355,17 @@ int game_on_state(thread_service_arg* thread_argv, char* file_name,int *number) 
 	int state=3;
 	while (game_on)
 	{
+		sprintf(SendStr,"TURN_SWITCH:%s\n",name_player[player_played]);
+		decode_message("SERVER_MOVE_REQUEST", &message, "sent");
+		if (SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket) == TRNS_FAILED) {
+			printf("Service socket error while writing, closing thread.\n");
+			closesocket(thread_argv->player_socket);
+			return ERROR_CODE;
+		}
+		if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			printf(WRITE_TO_FILE_ERROR_MESSAGE);
+			return ERROR_CODE;
+		}
 		if (thread_argv->player_index == 1) {
 			WaitForSingleObject(semaphore_client_1_turn, INFINITE);
 			samp1--;
@@ -364,8 +376,7 @@ int game_on_state(thread_service_arg* thread_argv, char* file_name,int *number) 
 		}
 		if (game_on == 1) {
 			game_view(thread_argv, file_name);
-			if (SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket) == TRNS_FAILED)
-			{
+			if (SendString(SERVER_MOVE_REQUEST, thread_argv->player_socket) == TRNS_FAILED)	{
 				printf("Service socket error while writing, closing thread.\n");
 				closesocket(thread_argv->player_socket);
 				return ERROR_CODE;
@@ -376,6 +387,7 @@ int game_on_state(thread_service_arg* thread_argv, char* file_name,int *number) 
 				return ERROR_CODE;
 			}
 			state = seven_boom(thread_argv, *number,  &message, file_name);
+			player_played = (player_played + 1) % 2;
 			if (thread_argv->player_index == 1) {
 				ReleaseSemaphore(semaphore_client_2_turn, 1, NULL);
 			}
@@ -477,7 +489,6 @@ int server_state(thread_service_arg* thread_argv) {
 	TransferResult_t RecvRes;
 	Message message;
 	char* AcceptedStr = NULL;
-
 	while (1) {
 		switch (state){
 		case 0: 
@@ -511,8 +522,10 @@ int server_state(thread_service_arg* thread_argv) {
 				while (number_of_player == 2);
 				WaitForSingleObject(semaphore_write, INFINITE);
 				number_of_player++;
-				if (number_of_player == 1)
+				if (number_of_player == 1) {
+					player_played = 0;
 					thread_argv->player_index = 1;
+				}
 				if (number_of_player == 2) {
 
 					thread_argv->player_index = 2;
