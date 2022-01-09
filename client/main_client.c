@@ -13,37 +13,7 @@ int set_timeout(SOCKET sock, DWORD timeout) {
 	}
 	return 0;
 }
-/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[],Message message,char *file_name) {
-	do {
-		gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-		if (STRINGS_ARE_EQUAL(SendStr, "1"))
-		{
-			sprintf(SendStr, "%s:%s", CLIENT_VERSUS,argv[3]);
-			SendRes = SendString(SendStr, m_socket);
-			if (SendRes == TRNS_FAILED)
-			{
-				printf("Socket error while trying to write data to socket\n");
-				free(recv);
-				return 0x555;
-			}
-			decode_message(CLIENT_VERSUS, &message, "sent");
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
-				printf(WRITE_TO_FILE_ERROR_MESSAGE);
-				return ERROR_CODE;
-			}
-			return 2;
-			
-		}
-		else if (STRINGS_ARE_EQUAL(SendStr, "2"))
-		{
-			
-			free(recv);
-			return 4;
-		}
-		printf("this messase is not good please type again\n");
-	} while (1);
-}
+
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int check_failed_disconnected(TransferResult_t RecvRes) {
 	if (RecvRes == TRNS_FAILED)

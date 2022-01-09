@@ -56,8 +56,7 @@ void free_message(Message* message)
 		if (message->param[i] != NULL) {
 		free(message->param[i]);
 
-		}
-			
+		}		
 	}
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/

@@ -12,27 +12,18 @@ char name_file[FILE_NAME_SIZE];
 
 
 /// <summary>
-/// 
+/// set timeout to socket
 /// </summary>
-/// <param name="sock"></param>
+/// <param name="sock">socket</param>
 /// <param name="timeout"></param>
-/// <returns></returns>
+/// <returns> return 0 if no error code </returns>
 int set_timeout(SOCKET sock, DWORD timeout);
+
 /// <summary>
-/// 
+/// check if recvres reecived an error
 /// </summary>
-/// <param name="SendStr"></param>
-/// <param name="SendRes"></param>
-/// <param name="argv"></param>
-/// <param name="message"></param>
-/// <param name="file_name"></param>
-/// <returns></returns>
-int play_or_quit(char* SendStr, TransferResult_t SendRes, char* argv[], Message message, char* file_name);
-/// <summary>
-/// 
-/// </summary>
-/// <param name="RecvRes"></param>
-/// <returns></returns>
+/// <param name="RecvRes">enum which old states of transacrions</param>
+/// <returns> return 0 if no error code </returns>
 int check_failed_disconnected(TransferResult_t RecvRes);
 /// <summary>
 /// checks if the user inserted to the program apositive integer
@@ -40,18 +31,13 @@ int check_failed_disconnected(TransferResult_t RecvRes);
 /// <param name="str">recieve string from user</param>
 /// <returns>return 1 if input is valid 0 else</returns>
 int is_digit(char* str);
-/// <summary>
-/// 
-/// </summary>
-/// <param name="seconds"></param>
-/// <returns></returns>
-int timeout(int seconds);
+
 /// <summary>
 /// main function to manage the client
 /// </summary>
-/// <param name="port"></param>
+/// <param name="port">port number</param>
 /// <param name="argv">arguments</param>
-/// <returns></returns>
+/// <returns>return code_exit if no errors</returns>
 int MainClient(int port, char* argv[]);
 /// <summary>
 /// 
