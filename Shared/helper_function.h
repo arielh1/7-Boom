@@ -31,6 +31,8 @@ void free_message(Message* message);
 /// <param name="send_or_recv">mode of decode for print</param>
 /// <returns>return SUCCESS_CODE if no errors</returns>
 int decode_message(char* input,Message * message,char * send_or_recv);
+
+
 #endif
 
 

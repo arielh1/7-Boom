@@ -11,30 +11,22 @@
 #include <string.h>
 #include <winsock2.h>
 #include <crtdbg.h>
-
-
-int server_run = 1;
-int number_of_player=0 ;
-int game_on = 1;
-int win;
-char name_player[2][MAX_LEN_NAME] = {"",""};
-char player_move[2][MAX_LEN_NAME] = { 0,0 };
-int player_played;
+#include "game.h"
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-
-#define NUM_OF_WORKER_THREADS 3
-
-#define SEND_STR_SIZE 350
-
-HANDLE semaphore_write ;
-HANDLE ThreadHandles[NUM_OF_WORKER_THREADS];
-SOCKET ThreadInputs[NUM_OF_WORKER_THREADS];
-
-HANDLE semaphore_wait;
-
-
-
+int set_timeout(SOCKET sock, DWORD timeout) {
+	// set sock options
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return ERROR_CODE;
+	}
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return ERROR_CODE;
+	}
+	return 0;
+}
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 static DWORD Exit_Thread(void) {
 	
 while (1) {
@@ -53,7 +45,7 @@ while (1) {
 	}
 }
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 void MainServer(int port){
 	thread_service_arg player_array[3];
 	SOCKET MainSocket = INVALID_SOCKET;
@@ -138,7 +130,7 @@ server_cleanup_1:
 	if (WSACleanup() == SOCKET_ERROR)
 		printf("Failed to close Winsocket, error %ld. Ending program.\n", WSAGetLastError());
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 static int FindFirstUnusedThreadSlot()
 {
 	int Ind;
@@ -163,7 +155,7 @@ static int FindFirstUnusedThreadSlot()
 
 	return Ind;
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 static void CleanupWorkerThreads()
 {
 	int Ind;
@@ -190,7 +182,7 @@ static void CleanupWorkerThreads()
 		}
 	}
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread_argv){
 	
 	if (RecvRes == TRNS_FAILED)
@@ -208,8 +200,7 @@ int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread
 		return 0;
 
 }
-
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int seven_boom( thread_service_arg* thread_argv,int number, Message *message) {
 	char snum[50];
 	char* AcceptedStr = NULL;
@@ -254,7 +245,7 @@ int seven_boom( thread_service_arg* thread_argv,int number, Message *message) {
 	free(AcceptedStr);
 	return state;
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int game_view(thread_service_arg* thread_argv) {
 	Message message;
 	char message_to_client[100]; 
@@ -277,7 +268,7 @@ int game_view(thread_service_arg* thread_argv) {
 	}
 	return 0;
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int server_opponent_quit(thread_service_arg* thread_argv) {
 	Message  message;
 	char SendStr[SEND_STR_SIZE];
@@ -299,8 +290,8 @@ int server_opponent_quit(thread_service_arg* thread_argv) {
 	}
 	return 5;
 }
-
-int game_run_one_turn(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZE],int *number ) {
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int game_run_one_turn(thread_service_arg* thread_argv,int *number ) {
 	Message  message;
 	int state = 3;
 	char SendStr[SEND_STR_SIZE];
@@ -354,7 +345,7 @@ int game_run_one_turn(thread_service_arg* thread_argv,char file_name[SEND_STR_SI
 			decode_message(SendStr, &message, "sent");
 			free_message(&message);
 			
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
@@ -373,8 +364,8 @@ int game_run_one_turn(thread_service_arg* thread_argv,char file_name[SEND_STR_SI
 	
 	return state;
 }
-
-int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE],int *number) {
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int game_on_state(thread_service_arg* thread_argv,int *number) {
 	Message  message;
 	char SendStr[SEND_STR_SIZE];
 	int state=3;
@@ -386,7 +377,7 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 				return server_opponent_quit(thread_argv);
 			}
 			decode_message(SendStr, &message, "sent");
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
@@ -401,7 +392,7 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 		
 		}
 		if (game_on == 1) {
-			state = game_run_one_turn(thread_argv, thread_argv->file_name, number);
+			state = game_run_one_turn(thread_argv, number);
 		}
 		else {
 			if (number_of_player != 2) {
@@ -412,7 +403,7 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 				}
 				decode_message(SendStr, &message, "sent");
 				free_message(&message);
-				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
 					return ERROR_CODE;
 				}
@@ -425,7 +416,7 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 				}
 				decode_message("GAME_ENDED", &message, "sent");
 				free_message(&message);
-				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
 					return ERROR_CODE;
 				}
@@ -454,8 +445,8 @@ int game_on_state(thread_service_arg* thread_argv, char file_name[SEND_STR_SIZE]
 	}
 	return state;
 }
-
-int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZE],int *number) {
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int server_main_menu(thread_service_arg* thread_argv,int *number) {
 	int state = 1;
 	char SendStr[SEND_STR_SIZE],*recv=NULL;
 	TransferResult_t RecvRes;
@@ -467,7 +458,7 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 			return ERROR_CODE;
 		}
 		decode_message(SendStr, &message, "sent");
-		if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+		if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 			printf(WRITE_TO_FILE_ERROR_MESSAGE);
 			return ERROR_CODE;
 		}
@@ -482,7 +473,7 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 			decode_message(recv, &message, "received");
 			free_message(&message);
 			free(recv);
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
@@ -514,7 +505,7 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 					}
 					decode_message(SendStr, &message, "sent");
 					free_message(&message);
-					if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+					if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
 						return ERROR_CODE;
 					}
@@ -533,7 +524,7 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 			decode_message(recv, &message, "received");
 			free_message(&message);
 			free(recv);
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
@@ -541,8 +532,8 @@ int server_main_menu(thread_service_arg* thread_argv,char file_name[SEND_STR_SIZ
 		}
 	return state;
 }
-
-int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int client_req_server_state(thread_service_arg* thread_argv) {
 	Message  message;
 	TransferResult_t SendRes;
 	TransferResult_t RecvRes;
@@ -555,9 +546,9 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 		decode_message(recv, &message, "received");
 		if (strstr(message.message_type, CLIENT_REQUEST)) {
 			strcpy(thread_argv->player_name, message.param[0]);
-			sprintf(file_name, "thread_log_%s.txt", thread_argv->player_name);
-			strcpy(thread_argv->file_name, file_name);
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			sprintf(thread_argv->file_name, "thread_log_%s.txt", thread_argv->player_name);
+			
+			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
@@ -572,16 +563,15 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 				}
 				decode_message("SERVER_DENIED\n", &message, "sent");
 				
-				if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
 					return ERROR_CODE;
 				}
 				closesocket(thread_argv->player_socket);
 				return 5;
 			}
-			
 			decode_message("SERVER_APPROVED", &message, "sent");
-			if (write_to_file(file_name, message.log_file_format) != SUCCESS_CODE) {
+			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
 			}
@@ -597,21 +587,20 @@ int client_req_server_state(thread_service_arg* thread_argv,char *file_name) {
 		}
 		return 0;
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int server_state(thread_service_arg* thread_argv) {
 	char SendStr[SEND_STR_SIZE], * recv = NULL, * input_file_str = NULL, file_name[SEND_STR_SIZE] = { 0 };
 	int  state = 0, number=0;
-
 	Message message;
 	char* AcceptedStr = NULL;
 	while (1) {
 		switch (state){
 		case 0: 
-			if ((state = client_req_server_state(thread_argv, file_name)) == ERROR_CODE)
+			if ((state = client_req_server_state(thread_argv)) == ERROR_CODE)
 				return ERROR_CODE;
 			  break;
 		case 1: {
-			if((state=server_main_menu(thread_argv, thread_argv->file_name,&number))== ERROR_CODE)
+			if((state=server_main_menu(thread_argv,&number))== ERROR_CODE)
 				return ERROR_CODE;
 		}
 		break;
@@ -630,7 +619,7 @@ int server_state(thread_service_arg* thread_argv) {
 			state = 3;
 			break;
 		case 3:
-			if( (state=game_on_state(thread_argv, file_name, &number)) == ERROR_CODE)
+			if( (state=game_on_state(thread_argv, &number)) == ERROR_CODE)
 				return ERROR_CODE;
 			break;
 		case 4:
@@ -658,7 +647,7 @@ int server_state(thread_service_arg* thread_argv) {
 	
 	return 0;
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 static DWORD ServiceThread(thread_service_arg* thread_argv)
 {
 	char  * recv = NULL, * input_file_str = NULL, file_name[1000] = { 0 };
@@ -675,7 +664,7 @@ return ERROR_CODE;
 //	_CrtDumpMemoryLeaks();
 	return 0;
 }
-
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
 	semaphore_wait = CreateSemaphore(0, 0, 1, NULL);

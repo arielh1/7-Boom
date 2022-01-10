@@ -13,14 +13,11 @@ int write_to_file(char* write_file_name, char* message) {
 	BOOL bErrorFlag = FALSE;
 	//create file
 	hFile = CreateFileA(write_file_name, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	
 	if (hFile == INVALID_HANDLE_VALUE) {
 		printf(CREATE_FILE_FALIURE_MESSAGE);
 		return ERROR_CODE;
 	}
 	//set pointer
-
-	
 	if (SetFilePointer(hFile, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) 
 		
 	{
