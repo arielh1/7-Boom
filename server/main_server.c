@@ -1,11 +1,4 @@
-/*TODO
-* 1.FIX FORMAT OF LOG FILE
-* 2.FIX PRINTF IN SERVER
-* NEW HEADER ?
-* 
-* 
-* 
-*/
+
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma warning(disable: 4013)
 #pragma warning(disable: 6258)
@@ -23,26 +16,23 @@
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 static DWORD Exit_Thread(void) {
 	
-while (1) {
-	char from_board[256];
-	int i;
-	gets_s(from_board, sizeof(from_board));
-	DWORD dwExitCode;
-	if (STRINGS_ARE_EQUAL(from_board, "exit")) {
-		printf("Server disconnected.Exiting.\n");
-		server_run = 0;
-		for (i = 0; i < 3; i++) {
-			dwExitCode = TerminateThread(ThreadHandles[i], 0x555);
-		
+	while (1) {
+		char from_board[256];
+		int i;
+		gets_s(from_board, sizeof(from_board));
+		DWORD dwExitCode;
+		if (STRINGS_ARE_EQUAL(from_board, "exit")) {
+			printf("Server disconnected.Exiting.\n");
+			server_run = 0;
+			for (i = 0; i < 3; i++) {
+				dwExitCode = TerminateThread(ThreadHandles[i], 0x555);
+
+			}
+			_CrtDumpMemoryLeaks();
+			exit(0);
+
 		}
-		_CrtDumpMemoryLeaks();
-		exit( 0);
 
-	}
-
-	
-
-	
 	}
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/

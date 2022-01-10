@@ -3,7 +3,7 @@
 ariel hacohen 313325938
 ofir atiya 311142541
 ex4
-server is get a arg in this format <server.exe> <port>
+server gets an arg in this format <server.exe> <port>
 
 */
 #ifndef MAIN_SERVER_H
@@ -107,7 +107,7 @@ int game_run_one_turn(thread_service_arg* thread_argv, int* number);
 int game_on_state(thread_service_arg* thread_argv, int* number);
 
 /// <summary>
-/// 
+/// send to client request to start the game and recieve client choise
 /// </summary>
 /// <param name="thread_argv">the thread in charge of client</param>
 /// <param name="number">number from client</param>
@@ -122,10 +122,10 @@ int server_main_menu(thread_service_arg* thread_argv, int* number);
 int client_req_server_state(thread_service_arg* thread_argv);
 
 /// <summary>
-/// 
+/// manage connections with client
 /// </summary>
 /// <param name="thread_argv">the thread in charge of client</param>
-/// <returns></returns>
+/// <returns> return 0 if no errors</returns>
 int server_state(thread_service_arg* thread_argv);
 
 /// <summary>

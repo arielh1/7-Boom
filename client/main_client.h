@@ -3,7 +3,7 @@
 ariel hacohen 313325938
 ofir atiya 311142541
 ex4
-client is get a arg in this format <client.exe> <ip> >< port>< name>
+client gets an arg in this format <client.exe> <ip> >< port>< name>
 */
 #ifndef MAIN_CLIENT_H
 #define MAIN_CLIENT_H
