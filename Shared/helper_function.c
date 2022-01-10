@@ -1,8 +1,6 @@
 #include "helper_function.h"
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#include "../Shared/SocketSendRecvTools.h"
-#include <stdlib.h>
 
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
@@ -111,3 +109,33 @@ int decode_message(char* input,  Message * message,char *send_or_recv)
 	return SUCCESS_CODE;
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int set_timeout(SOCKET sock, DWORD timeout) {
+	// set sock options
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return ERROR_CODE;
+	}
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return ERROR_CODE;
+	}
+	return 0;
+}
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int rec_failed_disconnected(TransferResult_t RecvRes) {
+
+	if (RecvRes == TRNS_FAILED)
+	{
+		printf("Socket error while trying to write data to socket\n");
+
+		return 0x555;
+	}
+	else if (RecvRes == TRNS_DISCONNECTED)
+	{
+		printf("Server closed connection. Bye!\n");
+		return 0x555;
+	}
+	else
+		return 0;
+
+}

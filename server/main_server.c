@@ -18,40 +18,32 @@
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
-#include <crtdbg.h>
 #include "game.h"
-
-/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int set_timeout(SOCKET sock, DWORD timeout) {
-	// set sock options
-	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
-		printf("failed to set sockopt\n");
-		return ERROR_CODE;
-	}
-	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
-		printf("failed to set sockopt\n");
-		return ERROR_CODE;
-	}
-	return 0;
-}
+#include "state_machine_server.h"
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 static DWORD Exit_Thread(void) {
 	
 while (1) {
 	char from_board[256];
+	int i;
 	gets_s(from_board, sizeof(from_board));
-
+	DWORD dwExitCode;
 	if (STRINGS_ARE_EQUAL(from_board, "exit")) {
+		printf("Server disconnected.Exiting.\n");
 		server_run = 0;
-
-	TerminateThread(ThreadHandles[0], 0);
-		TerminateThread(ThreadHandles[1], 0);
-		TerminateThread(ThreadHandles[2], 0);
+		for (i = 0; i < 3; i++) {
+			dwExitCode = TerminateThread(ThreadHandles[i], 0x555);
+		
+		}
 		_CrtDumpMemoryLeaks();
-
 		exit( 0);
+
 	}
-}
+
+	
+
+	
+	}
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 void MainServer(int port){
@@ -96,7 +88,6 @@ void MainServer(int port){
 		ThreadHandles[Ind] = NULL;
 	Ind = 0;
 	game_start();
-	printf("Waiting for a client to connect...\n");
 	semaphore_clinet_connect = CreateSemaphore(0, 0, 1, NULL);
 	semaphore_write= CreateSemaphore(0, 1, 1, NULL);
 	
@@ -110,7 +101,6 @@ void MainServer(int port){
 				printf("Accepting connection with client failed, error %ld\n", WSAGetLastError());
 				goto server_cleanup_3;
 			}
-			printf("new connect witn index:%d\n", index_player);
 				ThreadInputs[index_player] = player_array[index_player].player_socket;
 				ThreadHandles[index_player] = CreateThread(
 					NULL,
@@ -189,24 +179,6 @@ static void CleanupWorkerThreads()
 			}
 		}
 	}
-}
-/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread_argv){
-	
-	if (RecvRes == TRNS_FAILED)
-	{
-		printf("Socket error while trying to write data to socket\n");
-
-		return 0x555;
-	}
-	else if (RecvRes == TRNS_DISCONNECTED)
-	{
-		printf("Server closed connection. Bye!\n");
-		return 0x555;
-	}
-	else
-		return 0;
-
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int seven_boom( thread_service_arg* thread_argv,int number, Message *message) {
@@ -474,7 +446,7 @@ int server_main_menu(thread_service_arg* thread_argv,int *number) {
 		free(recv);
 		recv = NULL;
 		RecvRes = ReceiveString(&recv, thread_argv->player_socket);
-		if (rec_failed_disconnected(RecvRes, thread_argv) != 0) {
+		if (rec_failed_disconnected(RecvRes) != 0) {
 			return ERROR_CODE;
 		}
 		if (strstr(recv, CLIENT_VERSUS)) {
@@ -548,7 +520,7 @@ int client_req_server_state(thread_service_arg* thread_argv) {
 	int state = 0;
 	char SendStr[SEND_STR_SIZE], * recv = NULL;
 		RecvRes = ReceiveString(&recv, thread_argv->player_socket);
-		if (rec_failed_disconnected(RecvRes, thread_argv) != 0){
+		if (rec_failed_disconnected(RecvRes) != 0){
 			return ERROR_CODE;
 		}
 		decode_message(recv, &message, "received");
@@ -674,6 +646,8 @@ return ERROR_CODE;
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
+	if (argc != 2)
+		exit(exitcode);
 	semaphore_wait = CreateSemaphore(0, 0, 1, NULL);
 	CreateThread(
 		NULL,

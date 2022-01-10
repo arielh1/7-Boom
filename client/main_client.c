@@ -1,19 +1,6 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "main_client.h"
 #include "state_machine_client.h"
-int set_timeout(SOCKET sock, DWORD timeout) {
-	// set sock options
-	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
-		printf("failed to set sockopt\n");
-		return ERROR_CODE;
-	}
-	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
-		printf("failed to set sockopt\n");
-		return ERROR_CODE;
-	}
-	return 0;
-}
-
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int check_failed_disconnected(TransferResult_t RecvRes) {
 	if (RecvRes == TRNS_FAILED)
@@ -49,7 +36,6 @@ int is_digit(char* str) {
 	}
 	return 1;
 }
-
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int MainClient(int port,char *argv[])
 {

@@ -16,16 +16,6 @@ client is get a arg in this format <client.exe> <ip> >< port>< name>
 //global paramter
 SOCKET m_socket;
 char name_file[FILE_NAME_SIZE];
-
-
-/// <summary>
-/// set timeout to socket
-/// </summary>
-/// <param name="sock">socket</param>
-/// <param name="timeout"></param>
-/// <returns> return 0 if no error code </returns>
-int set_timeout(SOCKET sock, DWORD timeout);
-
 /// <summary>
 /// check if recvres reecived an error
 /// </summary>

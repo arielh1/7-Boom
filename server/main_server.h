@@ -10,8 +10,13 @@ server is get a arg in this format <server.exe> <port>
 #define MAIN_SERVER_H
 #include "../Shared/helper_function.h"
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
+//#include "game.h"
 #include "../Shared/SocketSendRecvTools.h"
+
+
+#define NUM_OF_WORKER_THREADS 3
+#define SEND_STR_SIZE 350
+
 typedef struct thread_service_arg {
 	char player_name[MAX_LEN_NAME];
 	int player_index;
@@ -19,6 +24,7 @@ typedef struct thread_service_arg {
 	SOCKET player_socket;
 	char file_name[MAX_LEN_NAME];
 }thread_service_arg;
+
 int server_run = 1;
 int number_of_player = 0;
 int game_on = 1;
@@ -27,16 +33,12 @@ char name_player[2][MAX_LEN_NAME] = { "","" };
 char player_move[2][MAX_LEN_NAME] = { 0,0 };
 int player_played;
 
-HANDLE semaphore_wait;
-#define NUM_OF_WORKER_THREADS 3
 
-#define SEND_STR_SIZE 350
+//HANDLE semaphore_clinet_connect;
+//HANDLE semaphore_client_1_turn;
+//HANDLE semaphore_client_2_turn;
 
-HANDLE semaphore_write;
-HANDLE ThreadHandles[NUM_OF_WORKER_THREADS];
-SOCKET ThreadInputs[NUM_OF_WORKER_THREADS];
-
-HANDLE semaphore_wait;
+//#include "game.h"
 /// <summary>
 /// 
 /// </summary>
@@ -64,13 +66,6 @@ static int FindFirstUnusedThreadSlot();
 /// 
 /// </summary>
 static void CleanupWorkerThreads();
-/// <summary>
-/// 
-/// </summary>
-/// <param name="RecvRes"></param>
-/// <param name="thread_argv"></param>
-/// <returns></returns>
-int rec_failed_disconnected(TransferResult_t RecvRes, thread_service_arg* thread_argv);
 /// <summary>
 /// 
 /// </summary>
