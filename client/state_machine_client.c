@@ -123,7 +123,7 @@ int state2(char* argv[]) {
 	char* recv = NULL;
 	TransferResult_t RecvRes;
 	Message message;
-
+	set_timeout(m_socket, RESPOND_TIME*2);
 	RecvRes = ReceiveString(&recv, m_socket);
 	if (check_failed_disconnected(RecvRes) == 0)
 	{
@@ -137,6 +137,7 @@ int state2(char* argv[]) {
 			}
 			free_message(&message);
 			free(recv);
+			set_timeout(m_socket, RESPOND_TIME );
 			return 1;
 
 		}
@@ -149,6 +150,7 @@ int state2(char* argv[]) {
 				return ERROR_CODE;
 			}
 			free(recv);
+			set_timeout(m_socket, RESPOND_TIME);
 			return 3;
 		}
 	}
