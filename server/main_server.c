@@ -500,6 +500,7 @@ int server_main_menu(thread_service_arg* thread_argv,int *number) {
 			return state;
 		}
 		if (strstr(recv, CLIENT_DISCONNECT)) {
+			
 			closesocket(thread_argv->player_socket);
 			decode_message(recv, &message, "received");
 			free_message(&message);
@@ -619,6 +620,12 @@ int server_state(thread_service_arg* thread_argv) {
 			state = 1;
 			break;
 		case 5:
+			sprintf(SendStr, "thread_log_%s.txt", thread_argv->player_name);
+			printf("Player disconnected.Exiting.\n");
+			if (write_to_file(thread_argv->file_name, "Player disconnected.Exiting.\n") != SUCCESS_CODE) {
+				printf(WRITE_TO_FILE_ERROR_MESSAGE);
+				return ERROR_CODE;
+			}
 			return 5;
 		default:
 			break;
