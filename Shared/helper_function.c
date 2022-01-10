@@ -89,16 +89,16 @@ int decode_message(char* input,  Message * message,char *send_or_recv)
 	switch (i)
 	{
 	case 0:
-		sprintf(message->log_file_format, "%s from server-%s\n", send_or_recv, message->message_type);
+		sprintf(message->log_file_format, "%s server-%s\n", send_or_recv, message->message_type);
 		break;
 	case 1:
-		sprintf(message->log_file_format, "%s from server-%s:%s\n", send_or_recv, message->message_type, message->param[0]);
+		sprintf(message->log_file_format, "%s server-%s:%s\n", send_or_recv, message->message_type, message->param[0]);
 		break;
 	case 2:
-		sprintf(message->log_file_format, "%s from server-%s:%s;%s\n", send_or_recv, message->message_type, message->param[0], message->param[1]);
+		sprintf(message->log_file_format, "%s server-%s:%s;%s\n", send_or_recv, message->message_type, message->param[0], message->param[1]);
 		break;
 	case 3:
-		sprintf(message->log_file_format, "%s from server-%s:%s;%s;%s\n", send_or_recv, message->message_type, message->param[0], message->param[1], message->param[2]);
+		sprintf(message->log_file_format, "%s server-%s:%s;%s;%s\n", send_or_recv, message->message_type, message->param[0], message->param[1], message->param[2]);
 		break;
 
 	default:

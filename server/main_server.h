@@ -39,11 +39,12 @@ int player_played;
 //HANDLE semaphore_client_2_turn;
 
 //#include "game.h"
+
+
 /// <summary>
-/// 
+/// check if recvres reecived an error
 /// </summary>
-/// <param name="sock"></param>
-/// <param name="timeout"></param>
+/// <param name="RecvRes">enum which old states of transacrions</param>
 /// <returns></returns>
 int set_timeout(SOCKET sock, DWORD timeout);
 /// <summary>
@@ -67,64 +68,73 @@ static int FindFirstUnusedThreadSlot();
 /// </summary>
 static void CleanupWorkerThreads();
 /// <summary>
-/// 
+///  recieve mesaage from client and decieds what will be next state according to game rules
 /// </summary>
-/// <param name="thread_argv"></param>
-/// <param name="number"></param>
-/// <param name="message"></param>
-/// <returns></returns>
+/// <param name="thread_argv"> the thread in charge of client</param>
+/// <param name="number"> number from client</param>
+/// <param name="message"> message from client</param>
+/// <returns> retuns next state </returns>
 int seven_boom(thread_service_arg* thread_argv, int number, Message* message);
+
 /// <summary>
-/// 
+/// return next state according to the client input
 /// </summary>
-/// <param name="thread_argv"></param>
+/// <param name="thread_argv">the thread in charge of client</param>
 /// <returns></returns>
 int game_view(thread_service_arg* thread_argv);
+
 /// <summary>
-/// 
+/// send a message to client if opponent has quited
 /// </summary>
-/// <param name="thread_argv"></param>
+/// <param name="thread_argv">the thread in charge of client</param>
 /// <returns></returns>
 int server_opponent_quit(thread_service_arg* thread_argv);
+
 /// <summary>
-/// 
+/// recieve next state from seven_boom and send messages to client accordingly
 /// </summary>
-/// <param name="thread_argv"></param>
-/// <param name="number"></param>
-/// <returns></returns>
+/// <param name="thread_argv">the thread in charge of client</param>
+/// <param name="number"> number from client</param>
+/// <returns>returns next state</returns>
 int game_run_one_turn(thread_service_arg* thread_argv, int* number);
+
 /// <summary>
-/// 
+/// start and end game accordibng to the client
 /// </summary>
-/// <param name="thread_argv"></param>
-/// <param name="number"></param>
-/// <returns></returns>
+/// <param name="thread_argv">the thread in charge of client</param>
+/// <param name="number"> number from client</param>
+/// <returns> returns next state </returns>
 int game_on_state(thread_service_arg* thread_argv, int* number);
+
 /// <summary>
 /// 
 /// </summary>
-/// <param name="thread_argv"></param>
-/// <param name="number"></param>
-/// <returns></returns>
+/// <param name="thread_argv">the thread in charge of client</param>
+/// <param name="number">number from client</param>
+/// <returns> returns next state </returns>
 int server_main_menu(thread_service_arg* thread_argv, int* number);
+
 /// <summary>
 /// 
 /// </summary>
-/// <param name="thread_argv"></param>
+/// <param name="thread_argv">the thread in charge of client</param>
 /// <returns></returns>
 int client_req_server_state(thread_service_arg* thread_argv);
+
 /// <summary>
 /// 
 /// </summary>
-/// <param name="thread_argv"></param>
+/// <param name="thread_argv">the thread in charge of client</param>
 /// <returns></returns>
 int server_state(thread_service_arg* thread_argv);
+
 /// <summary>
 /// 
 /// </summary>
-/// <param name="thread_argv"></param>
+/// <param name="thread_argv">the thread in charge of client</param>
 /// <returns></returns>
 static DWORD ServiceThread(thread_service_arg* thread_argv);
+
 /// <summary>
 /// 
 /// </summary>

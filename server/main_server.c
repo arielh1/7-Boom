@@ -197,7 +197,7 @@ int seven_boom( thread_service_arg* thread_argv,int number, Message *message) {
 		closesocket(thread_argv->player_socket);
 		return ERROR_CODE;
 	}
-	decode_message(AcceptedStr, message, "revice");
+	decode_message(AcceptedStr, message, "reviced from");
 	strcpy(player_move[thread_argv->player_index - 1] , message->param[0]);
 	if (write_to_file(thread_argv->file_name, message->log_file_format) != SUCCESS_CODE) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -239,7 +239,7 @@ int game_view(thread_service_arg* thread_argv) {
 			//	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
 			return 1;
 		}
-		decode_message(message_to_client, &message, "sent");
+		decode_message(message_to_client, &message, "sent to");
 		free_message(&message);
 		if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 			printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -255,7 +255,7 @@ int server_opponent_quit(thread_service_arg* thread_argv) {
 	game_on = 0;
 	number_of_player--;
 	sprintf(SendStr,"%s", SERVER_OPPONENT_QUIT);
-	decode_message(SendStr, &message, "sent");
+	decode_message(SendStr, &message, "sent to");
 	if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE)
 	{
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -282,7 +282,7 @@ int game_run_one_turn(thread_service_arg* thread_argv,int *number ) {
 			return server_opponent_quit(thread_argv);
 		}
 		sprintf(SendStr, "%s", SERVER_MOVE_REQUEST);
-		decode_message(SendStr, &message, "sent");
+		decode_message(SendStr, &message, "sent to");
 		free_message(&message);
 	
 		if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -306,7 +306,7 @@ int game_run_one_turn(thread_service_arg* thread_argv,int *number ) {
 				closesocket(thread_argv->player_socket);
 				return server_opponent_quit(thread_argv);
 			}
-			decode_message(SendStr, &message, "sent");
+			decode_message(SendStr, &message, "sent to");
 			free_message(&message);
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -322,7 +322,7 @@ int game_run_one_turn(thread_service_arg* thread_argv,int *number ) {
 			}
 			free_message(&message);
 			
-			decode_message(SendStr, &message, "sent");
+			decode_message(SendStr, &message, "sent to");
 			free_message(&message);
 			
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -356,7 +356,7 @@ int game_on_state(thread_service_arg* thread_argv,int *number) {
 				closesocket(thread_argv->player_socket);
 				return server_opponent_quit(thread_argv);
 			}
-			decode_message(SendStr, &message, "sent");
+			decode_message(SendStr, &message, "sent to");
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -381,7 +381,7 @@ int game_on_state(thread_service_arg* thread_argv,int *number) {
 					closesocket(thread_argv->player_socket);
 					return server_opponent_quit(thread_argv);
 				}
-				decode_message(SendStr, &message, "sent");
+				decode_message(SendStr, &message, "sent to");
 				free_message(&message);
 				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -394,7 +394,7 @@ int game_on_state(thread_service_arg* thread_argv,int *number) {
 					closesocket(thread_argv->player_socket);
 					return ERROR_CODE;
 				}
-				decode_message("GAME_ENDED", &message, "sent");
+				decode_message("GAME_ENDED", &message, "sent to");
 				free_message(&message);
 				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -412,7 +412,7 @@ int game_on_state(thread_service_arg* thread_argv,int *number) {
 					return ERROR_CODE;
 				}
 				sprintf(SendStr, "%s", SERVER_OPPONENT_QUIT);
-				decode_message(SendStr, &message, "sent");
+				decode_message(SendStr, &message, "sent to");
 				free_message(&message);
 				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE)
 				{
@@ -437,7 +437,7 @@ int server_main_menu(thread_service_arg* thread_argv,int *number) {
 			closesocket(thread_argv->player_socket);
 			return ERROR_CODE;
 		}
-		decode_message(SendStr, &message, "sent");
+		decode_message(SendStr, &message, "sent to");
 		if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 			printf(WRITE_TO_FILE_ERROR_MESSAGE);
 			return ERROR_CODE;
@@ -450,7 +450,7 @@ int server_main_menu(thread_service_arg* thread_argv,int *number) {
 			return ERROR_CODE;
 		}
 		if (strstr(recv, CLIENT_VERSUS)) {
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, "received from");
 			free_message(&message);
 			free(recv);
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -483,7 +483,7 @@ int server_main_menu(thread_service_arg* thread_argv,int *number) {
 						closesocket(thread_argv->player_socket);
 						return ERROR_CODE;
 					}
-					decode_message(SendStr, &message, "sent");
+					decode_message(SendStr, &message, "sent to");
 					free_message(&message);
 					if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 						printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -502,7 +502,7 @@ int server_main_menu(thread_service_arg* thread_argv,int *number) {
 		if (strstr(recv, CLIENT_DISCONNECT)) {
 			
 			closesocket(thread_argv->player_socket);
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, "received from");
 			free_message(&message);
 			free(recv);
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -524,7 +524,7 @@ int client_req_server_state(thread_service_arg* thread_argv) {
 		if (rec_failed_disconnected(RecvRes) != 0){
 			return ERROR_CODE;
 		}
-		decode_message(recv, &message, "received");
+		decode_message(recv, &message, "received from");
 		if (strstr(message.message_type, CLIENT_REQUEST)) {
 			strcpy(thread_argv->player_name, message.param[0]);
 			sprintf(thread_argv->file_name, "thread_log_%s.txt", thread_argv->player_name);
@@ -543,7 +543,7 @@ int client_req_server_state(thread_service_arg* thread_argv) {
 					return ERROR_CODE;
 				}
 				sprintf(SendStr, "%s", SERVER_DENIED);
-				decode_message(SendStr, &message, "sent");
+				decode_message(SendStr, &message, "sent to");
 				
 				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -553,7 +553,7 @@ int client_req_server_state(thread_service_arg* thread_argv) {
 				return 5;
 			}
 			sprintf(SendStr, "%s", SERVER_APPROVED);
-			decode_message(SendStr, &message, "sent");
+			decode_message(SendStr, &message, "sent to");
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -593,7 +593,7 @@ int server_state(thread_service_arg* thread_argv) {
 				return server_opponent_quit(thread_argv);
 			}
 		strcpy(player_move[thread_argv->player_index - 1] , "");
-			decode_message("GAME_STARTED", &message, "sent");
+			decode_message("GAME_STARTED", &message, "sent to");
 			free_message(&message);
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -611,7 +611,7 @@ int server_state(thread_service_arg* thread_argv) {
 				closesocket(thread_argv->player_socket);
 				return server_opponent_quit(thread_argv);
 			}
-			decode_message(SendStr, &message, "sent");
+			decode_message(SendStr, &message, "sent to");
 			free_message(&message);
 			if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
