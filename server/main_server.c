@@ -1,11 +1,3 @@
-/*TODO
-* 1.FIX FORMAT OF LOG FILE
-* 2.FIX PRINTF IN SERVER
-* NEW HEADER ?
-* 
-* 
-* 
-*/
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma warning(disable: 4013)
 #pragma warning(disable: 6258)
@@ -187,15 +179,8 @@ int seven_boom( thread_service_arg* thread_argv,int number, Message *message) {
 	TransferResult_t RecvRes;
 	int state=3 ;
 	RecvRes = ReceiveString(&AcceptedStr, thread_argv->player_socket);
-	if (RecvRes == TRNS_FAILED){
-		printf("Service socket error while reading, closing thread.\n");
-		closesocket(thread_argv->player_socket);
-		return ERROR_CODE;
-	}
-	else if (RecvRes == TRNS_DISCONNECTED){
-		printf("Connection closed while reading, closing thread.\n");
-		closesocket(thread_argv->player_socket);
-		return ERROR_CODE;
+	if (rec_failed_disconnected(RecvRes) != 0) {
+		return 5;
 	}
 	decode_message(AcceptedStr, message, "revice");
 	strcpy(player_move[thread_argv->player_index - 1] , message->param[0]);
@@ -234,7 +219,7 @@ int game_view(thread_service_arg* thread_argv) {
 
 		if (SendString(message_to_client, thread_argv->player_socket) == TRNS_FAILED)
 		{
-			printf("Service socket error while writing, closing thread.\n");
+			
 			closesocket(thread_argv->player_socket);
 			//	ReleaseSemaphore(semaphore_clinet_connect, 1, NULL);
 			return 1;
@@ -250,18 +235,14 @@ int game_view(thread_service_arg* thread_argv) {
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int server_opponent_quit(thread_service_arg* thread_argv) {
-	Message  message;
-	char SendStr[SEND_STR_SIZE];
 	game_on = 0;
 	number_of_player--;
-	sprintf(SendStr,"%s", SERVER_OPPONENT_QUIT);
-	decode_message(SendStr, &message, "sent");
-	if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE)
+	if (write_to_file(thread_argv->file_name, SERVER_OPPONENT_QUIT) != SUCCESS_CODE)
 	{
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
 		return ERROR_CODE;
 	}
-	free_message(&message);
+	//free_message(&message);
 	if (thread_argv->player_index == 1) {
 		ReleaseSemaphore(semaphore_client_2_turn, 1, NULL);
 	}
@@ -431,6 +412,7 @@ int server_main_menu(thread_service_arg* thread_argv,int *number) {
 	char SendStr[SEND_STR_SIZE],*recv=NULL;
 	TransferResult_t RecvRes;
 	Message  message;
+		set_timeout(thread_argv->player_socket, INFINITE);
 		strcpy(SendStr, "SERVER_MAIN_MENU\n");
 		if (SendString(SendStr, thread_argv->player_socket) == TRNS_FAILED) {
 			printf("Service socket error while writing, closing thread.\n");
@@ -588,6 +570,7 @@ int server_state(thread_service_arg* thread_argv) {
 		}
 		break;
 		case 2:
+			
 			if (SendString("GAME_STARTED\n", thread_argv->player_socket) == TRNS_FAILED) {
 				closesocket(thread_argv->player_socket);
 				return server_opponent_quit(thread_argv);

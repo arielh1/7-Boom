@@ -163,6 +163,7 @@ int state3(char* argv[]) {
 	TransferResult_t RecvRes;
 	Message message;
 	while (1) {
+		set_timeout(m_socket, INFINITE);
 		RecvRes = ReceiveString(&recv, m_socket);
 		if (check_failed_disconnected(RecvRes) == ERROR_CODE) {
 			free(recv);
@@ -231,6 +232,7 @@ int state3(char* argv[]) {
 			free_message(&message);
 		}
 		if (recv && strstr(recv, GAME_ENDED)) {
+			set_timeout(m_socket, RESPOND_TIME );
 			decode_message(recv, &message, "received");
 			printf("%s won!\n", message.param[0]);
 			free_message(&message);
