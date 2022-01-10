@@ -1,6 +1,0 @@
-received from server-CLIENT_REQUEST:ofir2
-sent from server-SERVER_APPROVED
-sent from server-SERVER_MAIN_MENU
-received from server-CLIENT_VERSUS:ofir2
-sent from server-GAME_STARTED
-sent from server-TURN_SWITCH:ofir

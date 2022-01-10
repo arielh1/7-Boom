@@ -2,6 +2,8 @@
 #define HELPER_FUNCTION
 
 #include "../Shared/SocketExampleShared.h"
+#include "../Shared/SocketSendRecvTools.h"
+
 
 
 /// <summary>
@@ -31,6 +33,15 @@ void free_message(Message* message);
 /// <param name="send_or_recv">mode of decode for print</param>
 /// <returns>return SUCCESS_CODE if no errors</returns>
 int decode_message(char* input,Message * message,char * send_or_recv);
+/// <summary>
+/// 
+/// </summary>
+/// <param name="sock"></param>
+/// <param name="timeout"></param>
+/// <returns></returns>
+int set_timeout(SOCKET sock, DWORD timeout);
+
+int rec_failed_disconnected(TransferResult_t RecvRes);
 #endif
 
 

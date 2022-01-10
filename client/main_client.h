@@ -1,3 +1,10 @@
+
+/*
+ariel hacohen 313325938
+ofir atiya 311142541
+ex4
+client is get a arg in this format <client.exe> <ip> >< port>< name>
+*/
 #ifndef MAIN_CLIENT_H
 #define MAIN_CLIENT_H
 #include "../Shared/SocketExampleShared.h"
@@ -9,16 +16,6 @@
 //global paramter
 SOCKET m_socket;
 char name_file[FILE_NAME_SIZE];
-
-
-/// <summary>
-/// set timeout to socket
-/// </summary>
-/// <param name="sock">socket</param>
-/// <param name="timeout"></param>
-/// <returns> return 0 if no error code </returns>
-int set_timeout(SOCKET sock, DWORD timeout);
-
 /// <summary>
 /// check if recvres reecived an error
 /// </summary>

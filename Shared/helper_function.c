@@ -1,8 +1,6 @@
 #include "helper_function.h"
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#include "../Shared/SocketSendRecvTools.h"
-#include <stdlib.h>
 
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
@@ -13,14 +11,11 @@ int write_to_file(char* write_file_name, char* message) {
 	BOOL bErrorFlag = FALSE;
 	//create file
 	hFile = CreateFileA(write_file_name, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	
 	if (hFile == INVALID_HANDLE_VALUE) {
 		printf(CREATE_FILE_FALIURE_MESSAGE);
 		return ERROR_CODE;
 	}
 	//set pointer
-
-	
 	if (SetFilePointer(hFile, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) 
 		
 	{
@@ -114,3 +109,33 @@ int decode_message(char* input,  Message * message,char *send_or_recv)
 	return SUCCESS_CODE;
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int set_timeout(SOCKET sock, DWORD timeout) {
+	// set sock options
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return ERROR_CODE;
+	}
+	if (SUCCESS_CODE != setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(DWORD))) {
+		printf("failed to set sockopt\n");
+		return ERROR_CODE;
+	}
+	return 0;
+}
+/*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
+int rec_failed_disconnected(TransferResult_t RecvRes) {
+
+	if (RecvRes == TRNS_FAILED)
+	{
+		printf("Socket error while trying to write data to socket\n");
+
+		return 0x555;
+	}
+	else if (RecvRes == TRNS_DISCONNECTED)
+	{
+		printf("Server closed connection. Bye!\n");
+		return 0x555;
+	}
+	else
+		return 0;
+
+}
