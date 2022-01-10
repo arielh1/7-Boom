@@ -1,8 +1,5 @@
 #include "helper_function.h"
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-
-
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int write_to_file(char* write_file_name, char* message) {
 	HANDLE hFile = NULL;
@@ -126,14 +123,12 @@ int rec_failed_disconnected(TransferResult_t RecvRes) {
 
 	if (RecvRes == TRNS_FAILED)
 	{
-		printf("Socket error while trying to write data to socket\n");
-
-		return 0x555;
+		return 5;
 	}
 	else if (RecvRes == TRNS_DISCONNECTED)
 	{
-		printf("Server closed connection. Bye!\n");
-		return 0x555;
+		
+		return 5;
 	}
 	else
 		return 0;
