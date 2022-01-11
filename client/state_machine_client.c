@@ -286,33 +286,35 @@ int state4() {
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int state5(SOCKADDR_IN clientService, char* argv[]) {
-
 	while ((connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR)) {
 		{
 			char SendStr[MAX_LINE];
 			printf(CLIENT_CHOOSE_T_E, argv[1], argv[2]);
-			gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
-			if (STRINGS_ARE_EQUAL(SendStr, "1"))
-			{
-				m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-				if (m_socket == INVALID_SOCKET) {
-					printf("Error at socket(): %ld\n", WSAGetLastError());
-					WSACleanup();
-					return ERROR_CODE;
+			do {
+				gets_s(SendStr, sizeof(SendStr)); //Reading a string from the keyboard
+				if (STRINGS_ARE_EQUAL(SendStr, "1"))
+				{
+					m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+					if (m_socket == INVALID_SOCKET) {
+						printf("Error at socket(): %ld\n", WSAGetLastError());
+						WSACleanup();
+						return ERROR_CODE;
+					}
+					clientService.sin_family = AF_INET;
+					clientService.sin_addr.s_addr = inet_addr(argv[1]); //Setting the IP address to connect to
+					clientService.sin_port = htons(atoi(argv[2])); //Setting the port to connect to.
+					set_timeout(m_socket, (DWORD)RESPOND_TIME);
+					return 0;
+		//			continue;
 				}
-				clientService.sin_family = AF_INET;
-				clientService.sin_addr.s_addr = inet_addr(argv[1]); //Setting the IP address to connect to
-				clientService.sin_port = htons(atoi(argv[2])); //Setting the port to connect to.
-				set_timeout(m_socket, (DWORD)RESPOND_TIME);
-				continue;
-			}
-			if (STRINGS_ARE_EQUAL(SendStr, "2"))
-			{
+				else if (STRINGS_ARE_EQUAL(SendStr, "2"))
+				{
+					return 4;
+				}			
+				printf("Error: illegal command:\n");
+				//WSACleanup();
+			} while (1);
 
-				return 4;
-			}
-			printf("Error: illegal command:\n");
-			//WSACleanup();
 		}
 
 	}
