@@ -26,10 +26,18 @@ static DWORD Exit_Thread(void) {
 			server_run = 0;
 			for (i = 0; i < 3; i++) {
 				dwExitCode = TerminateThread(ThreadHandles[i], 0x555);
-
+				CloseHandle(ThreadHandles[i]);
+				shutdown(
+					array_socket[i+1],
+					SD_BOTH
+				);
 			}
+			shutdown(
+				array_socket[0],
+				SD_BOTH
+			);
 			_CrtDumpMemoryLeaks();
-			exit(0);
+			exit (0);
 
 		}
 
@@ -73,9 +81,11 @@ void MainServer(int port) {
 		printf("Failed listening on socket, error %ld.\n", WSAGetLastError());
 		goto server_cleanup_2;
 	}
-
-	for (Ind = 0; Ind < NUM_OF_WORKER_THREADS; Ind++)
+	array_socket[0] = MainSocket;
+	for (Ind = 0; Ind < NUM_OF_WORKER_THREADS; Ind++) {
 		ThreadHandles[Ind] = NULL;
+		array_socket[Ind + 1] = NULL;
+	}
 	Ind = 0;
 	game_start();
 	semaphore_clinet_connect = CreateSemaphore(0, 0, 1, NULL);
@@ -92,6 +102,7 @@ void MainServer(int port) {
 			goto server_cleanup_3;
 		}
 		ThreadInputs[index_player] = player_array[index_player].player_socket;
+		array_socket[index_player] = player_array[index_player].player_socket;
 		ThreadHandles[index_player] = CreateThread(
 			NULL,
 			0,

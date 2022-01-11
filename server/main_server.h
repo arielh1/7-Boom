@@ -3,7 +3,7 @@ ariel hacohen 313325938
 ofir atiya 311142541
 ex4
 server gets an arg in this format <server.exe> <port>
-
+END/CONT
 */
 #ifndef MAIN_SERVER_H
 #define MAIN_SERVER_H
@@ -15,7 +15,7 @@ server gets an arg in this format <server.exe> <port>
 
 #define NUM_OF_WORKER_THREADS 3
 #define SEND_STR_SIZE 350
-
+SOCKET array_socket[4];
 typedef struct thread_service_arg {
 	char player_name[MAX_LEN_NAME];
 	int player_index;

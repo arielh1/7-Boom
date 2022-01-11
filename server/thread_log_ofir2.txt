@@ -1,7 +1,15 @@
 received from server-CLIENT_REQUEST:ofir2
-sent from server-SERVER_APPROVED
-sent from server-SERVER_MAIN_MENU
+sent to server-SERVER_APPROVED
+sent to server-SERVER_MAIN_MENU
 received from server-CLIENT_VERSUS:ofir2
-sent from server-GAME_STARTED
-sent from server-TURN_SWITCH:ariel
-sent from server-SERVER_OPPONENT_QUIT
+sent server-GAME_STARTED
+sent to server-TURN_SWITCH:ofir2
+sent to server-SERVER_MOVE_REQUEST
+reviced from server-CLIENT_PLAYER_MOVE:1
+sent to server-TURN_SWITCH:ariel
+sent to server-GAME_VIEW:ariel;2;CONT
+sent to server-SERVER_MOVE_REQUEST
+reviced from server-CLIENT_PLAYER_MOVE:3
+sent to server-TURN_SWITCH:ariel
+sent to server-GAME_VIEW:ariel;4;CONT
+sent to server-SERVER_MOVE_REQUEST
