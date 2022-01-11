@@ -402,10 +402,7 @@ int game_on_state(thread_service_arg* thread_argv, int* number) {
 			}
 			else {
 				number_of_player=0;
-				
-				
 				ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
-				
 				if (SendString("SERVER_OPPONENT_QUIT\n", thread_argv->player_socket) == TRNS_FAILED) {
 					printf("Service socket error while writing, closing thread.\n");
 					closesocket(thread_argv->player_socket);

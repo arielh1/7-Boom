@@ -286,6 +286,7 @@ int state4() {
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int state5(SOCKADDR_IN clientService, char* argv[]) {
+
 	while ((connect(m_socket, (SOCKADDR*)&clientService, sizeof(clientService)) == SOCKET_ERROR)) {
 		{
 			char SendStr[MAX_LINE];
@@ -304,15 +305,13 @@ int state5(SOCKADDR_IN clientService, char* argv[]) {
 					clientService.sin_addr.s_addr = inet_addr(argv[1]); //Setting the IP address to connect to
 					clientService.sin_port = htons(atoi(argv[2])); //Setting the port to connect to.
 					set_timeout(m_socket, (DWORD)RESPOND_TIME);
-					return 0;
-		//			continue;
+					break;
 				}
 				else if (STRINGS_ARE_EQUAL(SendStr, "2"))
 				{
 					return 4;
 				}			
 				printf("Error: illegal command:\n");
-				//WSACleanup();
 			} while (1);
 
 		}
