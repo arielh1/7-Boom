@@ -526,7 +526,7 @@ int client_req_server_state(thread_service_arg* thread_argv) {
 	decode_message(recv, &message, RECIVED_SERVER);
 	if (strstr(message.message_type, CLIENT_REQUEST)) {
 		strcpy(thread_argv->player_name, message.param[0]);
-		sprintf(thread_argv->file_name, "thread_log_%s.txt", thread_argv->player_name);
+		sprintf(thread_argv->file_name, "Thread_log_%s.txt", thread_argv->player_name);
 
 		if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
 			printf(WRITE_TO_FILE_ERROR_MESSAGE);

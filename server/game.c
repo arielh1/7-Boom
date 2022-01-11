@@ -7,7 +7,7 @@ int is_seven_boom(int number) {
 	return (number % 7 == 0);
 }
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
-int game_start() {//TODO ERROR
+int game_start() {
 	
 
 	semaphore_client_1_turn = CreateSemaphore(0, 1, 1, NULL); 
