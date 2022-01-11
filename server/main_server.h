@@ -43,27 +43,26 @@ int player_played;
 /// <summary>
 /// check if recvres reecived an error
 /// </summary>
-/// <param name="RecvRes">enum which old states of transacrions</param>
+/// <param name="RecvRes">enum which hold states of transacrions</param>
 /// <returns></returns>
 int set_timeout(SOCKET sock, DWORD timeout);
 /// <summary>
-/// 
+///  exit thread if recieve exit from user
 /// </summary>
-/// <param name=""></param>
 /// <returns></returns>
 static DWORD Exit_Thread(void);
 /// <summary>
-/// 
+/// create sockets, threads, semaphore and perform cleanup in the end
 /// </summary>
-/// <param name="port"></param>
+/// <param name="port">port num</param>
 void MainServer(int port);
 /// <summary>
-/// 
+/// find the first unused thread slot
 /// </summary>
 /// <returns></returns>
 static int FindFirstUnusedThreadSlot();
 /// <summary>
-/// 
+/// clean handels and sockets
 /// </summary>
 static void CleanupWorkerThreads();
 /// <summary>
@@ -128,10 +127,10 @@ int client_req_server_state(thread_service_arg* thread_argv);
 int server_state(thread_service_arg* thread_argv);
 
 /// <summary>
-/// 
+/// manage thread
 /// </summary>
 /// <param name="thread_argv">the thread in charge of client</param>
-/// <returns></returns>
+/// <returns>returns 0 if no errors</returns>
 static DWORD ServiceThread(thread_service_arg* thread_argv);
 
 /// <summary>

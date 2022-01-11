@@ -17,9 +17,9 @@ HANDLE semaphore_wait;
 
 
 /// <summary>
-/// 
+/// create semaphores to initialize the game
 /// </summary>
-/// <returns></returns>
+/// <returns>return 0</returns>
 int game_start();
 /// <summary>
 /// check if number is a double of 7
