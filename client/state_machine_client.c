@@ -9,7 +9,7 @@ int state0(char* argv[]) {
 	TransferResult_t RecvRes;
 	Message message;
 	sprintf(SendStr, "%s:%s", CLIENT_REQUEST, argv[3]);
-	sprintf(name_file, "client_log_%s.txt", argv[3]);
+	sprintf(name_file, "Client_log_%s.txt", argv[3]);
 	SendRes = SendString(SendStr, m_socket);
 	if (SendRes == TRNS_FAILED) {
 		printf("Server disconnected. Exiting.\n");
@@ -19,7 +19,7 @@ int state0(char* argv[]) {
 		}
 		return ERROR_CODE;
 	}
-	decode_message(SendStr, &message, SENT_TO_SERVER);
+	decode_message(SendStr, &message, SENT_CLIENT);
 	free_message(&message);
 	if (strstr(message.message_type, CLIENT_REQUEST)) {
 		sprintf(name_file, "client_log_%s.txt", argv[3]);
@@ -36,7 +36,7 @@ int state0(char* argv[]) {
 		return ERROR_CODE;
 	}
 	if (strstr(recv, SERVER_APPROVED)) {
-		decode_message(recv, &message, RECIVED_FROM_SERVER);
+		decode_message(recv, &message, RECIVED_CLIENT);
 		free(recv);
 		free_message(&message);
 		if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
@@ -49,7 +49,7 @@ int state0(char* argv[]) {
 
 	}
 	if (strstr(recv, SERVER_DENIED)) {
-		decode_message(recv, &message, "received");
+		decode_message(recv, &message, RECIVED_CLIENT);
 		printf("Server on %s:%s  denied the connection request.\n", argv[1], argv[2]);
 		if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 			printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -75,7 +75,7 @@ int state1(char* argv[]) {
 	if (check_failed_disconnected(RecvRes) == ERROR_CODE)
 		return ERROR_CODE;
 	if (strstr(recv, SERVER_MAIN_MENU)) {
-		decode_message(recv, &message, RECIVED_FROM_SERVER);
+		decode_message(recv, &message, RECIVED_CLIENT);
 		if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 			printf(WRITE_TO_FILE_ERROR_MESSAGE);
 			free_message(&message);
@@ -98,7 +98,7 @@ int state1(char* argv[]) {
 					printf("Server disconnected. Exiting.\n");
 					return ERROR_CODE;
 				}
-				decode_message(SendStr, &message, SENT_TO_SERVER);
+				decode_message(SendStr, &message, SENT_CLIENT);
 				free_message(&message);
 				if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -128,7 +128,7 @@ int state2(char* argv[]) {
 	if (check_failed_disconnected(RecvRes) == 0)
 	{
 		if (strstr(recv, SERVER_NO_OPPONENTS)) {
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, RECIVED_CLIENT);
 			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				free_message(&message);
@@ -143,7 +143,7 @@ int state2(char* argv[]) {
 		}
 		if (strstr(recv, GAME_STARTED)) {
 			printf("Game is on!\n");
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, RECIVED_CLIENT);
 			free_message(&message);
 			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -170,7 +170,7 @@ int state3(char* argv[]) {
 			return ERROR_CODE;
 		}
 		if (recv && strstr(recv, SERVER_MOVE_REQUEST) && recv) {
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, RECIVED_CLIENT);
 			free(recv);
 			recv = NULL;
 			free_message(&message);
@@ -201,7 +201,7 @@ int state3(char* argv[]) {
 				printf("Server disconnected. Exiting.\n");
 				return ERROR_CODE;
 			}
-			decode_message(SendStr, &message, "sent");
+			decode_message(SendStr, &message, SENT_CLIENT);
 			free_message(&message);
 			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
@@ -210,7 +210,7 @@ int state3(char* argv[]) {
 
 		}
 		if (recv && strstr(recv, GAME_VIEW)) {
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, RECIVED_CLIENT);
 			printf("%s move was %s\n%s\n", message.param[0], message.param[1], message.param[2]);
 			free_message(&message);
 			free(recv);
@@ -221,7 +221,7 @@ int state3(char* argv[]) {
 			}
 		}
 		if (recv && strstr(recv, TURN_SWITCH)) {
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, RECIVED_CLIENT);
 			free(recv);
 			recv = NULL;
 			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
@@ -233,7 +233,7 @@ int state3(char* argv[]) {
 		}
 		if (recv && strstr(recv, GAME_ENDED)) {
 			set_timeout(m_socket, RESPOND_TIME );
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, RECIVED_CLIENT);
 			printf("%s won!\n", message.param[0]);
 			free_message(&message);
 			free(recv);
@@ -246,10 +246,10 @@ int state3(char* argv[]) {
 		}
 		if (recv && strstr(recv, SERVER_OPPONENT_QUIT)) {
 			printf("Opponent quit .\n");
-			decode_message(recv, &message, "received");
+			decode_message(recv, &message, RECIVED_CLIENT);
 			free(recv);
 			recv = NULL;
-			free_message(&message);
+			//free_message(&message);
 			if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 				printf(WRITE_TO_FILE_ERROR_MESSAGE);
 				return ERROR_CODE;
@@ -275,7 +275,7 @@ int state4() {
 		printf("Server disconnected. Exiting.\n");
 		return ERROR_CODE;
 	}
-	decode_message(SendStr, &message, "sent");
+	decode_message(SendStr, &message, SENT_CLIENT);
 	if (write_to_file(name_file, message.log_file_format) != SUCCESS_CODE) {
 		printf(WRITE_TO_FILE_ERROR_MESSAGE);
 		return ERROR_CODE;

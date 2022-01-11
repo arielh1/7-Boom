@@ -95,7 +95,7 @@ int decode_message(char* input,  Message * message,char *send_or_recv)
 		sprintf(message->log_file_format, "%s server-%s:%s;%s\n", send_or_recv, message->message_type, message->param[0], message->param[1]);
 		break;
 	case 3:
-		sprintf(message->log_file_format, "%s server-%s:%s;%s;%s\n", send_or_recv, message->message_type, message->param[0], message->param[1], message->param[2]);
+		sprintf(message->log_file_format, "%s%s:%s;%s;%s\n", send_or_recv, message->message_type, message->param[0], message->param[1], message->param[2]);
 		break;
 
 	default:

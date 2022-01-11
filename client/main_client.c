@@ -65,7 +65,7 @@ int MainClient(int port,char *argv[])
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 int main(int argc, char* argv[]) {
 	int exitcode = -1;
-	sprintf(name_file, "client_log_%s.txt", argv[3]);
+	sprintf(name_file, "Client_log_%s.txt", argv[3]);
 	exitcode= MainClient( atoi(argv[2]), argv);
 	DeleteFileA(name_file);
 	_CrtDumpMemoryLeaks();

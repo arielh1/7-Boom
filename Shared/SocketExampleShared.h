@@ -15,9 +15,11 @@
 
 
 
-#define ERROR_CHAR "-1"
-#define SENT_TO_SERVER "sent to server-"
-#define RECIVED_FROM_SERVER "received from server-"
+#define SENT_CLIENT "sent to server-"
+#define RECIVED_CLIENT "received from server-"
+#define SENT_SERVER "sent to client-"
+#define RECIVED_SERVER "received from client-"
+
 #define SERVER_CONNECTION_FAILIURE "Failed Connecting to Server on "
 #define SERVER_CONNECTION_APPROVED "Connected to server on"
 #define CLIENT_REQUEST "CLIENT_REQUEST"
@@ -65,7 +67,8 @@
 #define ARGUMENTS_POINTER_NULL "Arguments Pointer to manage_calculations is NULL\n"
 #define CLIENT_CHOOSE_P_Q "Choose what to do next:\n1. Play against another client\n2. Quit\n"
 #define CLIENT_CHOOSE_T_E "Failed connecting to server on %s:%s.\n1. Try to reconnect\n2. Exit\n"
-
+#define FILED_CONNECTING  "Failed connecting to server on %s:%s.\n"
+#define CHOOSE_T_E "1. Try to reconnect\n2. Exit\n"
 #define WRITE_TO_LOG_MSG_TRN_FAIL "message transfer failed. Exiting.\n"
 #define WRITE_TO_LOG_MSG_DISCCONECT "Player disconnected. Exiting.\n"
 #define WRITE_TO_LOG_WRONG_MSG "Message error. Exiting.\n"

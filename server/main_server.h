@@ -3,7 +3,6 @@ ariel hacohen 313325938
 ofir atiya 311142541
 ex4
 server gets an arg in this format <server.exe> <port>
-END/CONT
 */
 #ifndef MAIN_SERVER_H
 #define MAIN_SERVER_H
@@ -11,8 +10,6 @@ END/CONT
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 //#include "game.h"
 #include "../Shared/SocketSendRecvTools.h"
-
-
 #define NUM_OF_WORKER_THREADS 3
 #define SEND_STR_SIZE 350
 SOCKET array_socket[4];
@@ -33,11 +30,6 @@ char player_move[2][MAX_LEN_NAME] = { 0,0 };
 int player_played;
 
 
-//HANDLE semaphore_clinet_connect;
-//HANDLE semaphore_client_1_turn;
-//HANDLE semaphore_client_2_turn;
-
-//#include "game.h"
 
 
 /// <summary>
