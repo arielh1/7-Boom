@@ -1,8 +1,0 @@
-received from client- server-CLIENT_REQUEST:ariel2client.exe
-sent to client- server-SERVER_APPROVED
-sent to client- server-SERVER_MAIN_MENU
-received from client- server-CLIENT_VERSUS:ariel2client.exe
-sent to client- server-GAME_STARTED
-sent to client- server-TURN_SWITCH:ariel
-sent to client-GAME_VIEW:ariel;1;CONT
-sent to client- server-SERVER_MOVE_REQUEST

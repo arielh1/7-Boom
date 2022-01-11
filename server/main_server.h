@@ -28,7 +28,7 @@ int win;
 char name_player[2][MAX_LEN_NAME] = { "","" };
 char player_move[2][MAX_LEN_NAME] = { 0,0 };
 int player_played;
-
+int  flag_opponent_quit = 0;
 
 
 

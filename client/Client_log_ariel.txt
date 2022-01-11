@@ -1,7 +1,0 @@
-received from server- server-SERVER_APPROVED
-received from server- server-SERVER_MAIN_MENU
-sent to server- server-CLIENT_VERSUS:ariel
-received from server- server-GAME_STARTED
-received from server- server-TURN_SWITCH:ari
-received from server-GAME_VIEW:ari;1;CONT
-received from server- server-SERVER_MOVE_REQUEST

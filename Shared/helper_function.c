@@ -127,7 +127,7 @@ int rec_failed_disconnected(TransferResult_t RecvRes) {
 	}
 	else if (RecvRes == TRNS_DISCONNECTED)
 	{
-		
+	
 		return 5;
 	}
 	else
