@@ -332,6 +332,7 @@ int game_run_one_turn(thread_service_arg* thread_argv, int* number) {
 	else  {
 		
 		sprintf(SendStr, "GAME_VIEW:%s;%s;END\n", name_player[player_played], message.param[0]);
+		number_of_player = 0;
 		if (SendString(SendStr, thread_argv->player_socket) == TRNS_FAILED) {
 
 			closesocket(thread_argv->player_socket);
@@ -399,6 +400,7 @@ int game_on_state(thread_service_arg* thread_argv, int* number) {
 					closesocket(thread_argv->player_socket);
 					return server_opponent_quit(thread_argv);
 				}
+				number_of_player = 0;
 				decode_message(SendStr, &message, SENT_SERVER);
 				free_message(&message);
 				if (write_to_file(thread_argv->file_name, message.log_file_format) != SUCCESS_CODE) {
@@ -418,7 +420,7 @@ int game_on_state(thread_service_arg* thread_argv, int* number) {
 					printf(WRITE_TO_FILE_ERROR_MESSAGE);
 					return ERROR_CODE;
 				}
-				number_of_player--;
+				
 				ReleaseSemaphore(semaphore_client_1_turn, 1, NULL);
 				return 1;
 			}

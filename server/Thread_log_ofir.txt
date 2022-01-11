@@ -1,0 +1,34 @@
+received from client- server-CLIENT_REQUEST:ofir
+sent to client- server-SERVER_APPROVED
+sent to client- server-SERVER_MAIN_MENU
+received from client- server-CLIENT_VERSUS:ofir
+sent to client- server-SERVER_NO_OPPONENTS
+sent to client- server-SERVER_MAIN_MENU
+received from client- server-CLIENT_REQUEST:ofir
+sent to client- server-SERVER_APPROVED
+sent to client- server-SERVER_MAIN_MENU
+received from client- server-CLIENT_VERSUS:ofir
+sent to client- server-GAME_STARTED
+sent to client- server-TURN_SWITCH:ofir
+sent to client- server-SERVER_MOVE_REQUEST
+received from client- server-CLIENT_PLAYER_MOVE:1
+sent to client- server-TURN_SWITCH:ariel
+sent to client-GAME_VIEW:ariel;2;CONT
+sent to client- server-SERVER_MOVE_REQUEST
+received from client- server-CLIENT_PLAYER_MOVE:2
+sent to client-GAME_VIEW:ofir;2;END
+sent to client- server-GAME_ENDED:ariel
+sent to client- server-SERVER_MAIN_MENU
+received from client- server-CLIENT_VERSUS:ofir
+sent to client- server-GAME_STARTED
+sent to client- server-TURN_SWITCH:ariel
+sent to client-GAME_VIEW:ariel;1;CONT
+sent to client- server-SERVER_MOVE_REQUEST
+received from client- server-CLIENT_PLAYER_MOVE:2
+sent to client- server-TURN_SWITCH:ariel
+sent to client-GAME_VIEW:ariel;3;CONT
+sent to client- server-SERVER_MOVE_REQUEST
+received from client- server-CLIENT_PLAYER_MOVE:2
+sent to client-GAME_VIEW:ofir;2;END
+sent to client- server-GAME_ENDED:ariel
+sent to client- server-SERVER_MAIN_MENU
